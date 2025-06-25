@@ -7,24 +7,38 @@ import os
 
 # 讀取設定
 config = configparser.ConfigParser()
-config.read('config.ini')
+with open('config.ini', 'r', encoding='utf-8-sig') as f:
+    config.read_file(f)
 
-SECRET_KEY = config.get('app', 'secret_key')
-DB_PATH = 'posts.db'
-ADMIN_PSWD = config.get('app', 'admin_password')
-HASH_SALT = config.get('security', 'hash_salt')
+WEB_CHN_NAME    = config.get('web', 'chinese_name')
+WEB_ENG_NAME    = config.get('web', 'english_name')
+DB_PATH         = config.get('app', 'sql_file')
+SECRET_KEY      = config.get('app', 'secret_key')
+ADMIN_PSWD      = config.get('app', 'admin_password')
+HASH_SALT       = config.get('security', 'hash_salt')
+DBG_MODE        = config.getboolean('app', 'debug')
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
-
-
 
 # --- 藍圖註冊 ---
 app.register_blueprint(post_bp)   # 一般功能
 app.register_blueprint(admin_bp)  # 管理員功能
 
 if __name__ == '__main__':
-    # 資料庫相關初始化
+    # 1. 設定資料庫路徑和管理員密碼
+    app.logger.info(f"> 設定資料庫路徑: {DB_PATH}")
+    app.logger.info(f"> 設定管理員密碼: {ADMIN_PSWD}")
+    app.logger.info(f"> 設定密碼鹽: {HASH_SALT}")
     setup_config(DB_PATH, ADMIN_PSWD, HASH_SALT)
-    init_db()
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    
+    # 2. 資料庫相關初始化
+    if not os.path.exists(DB_PATH):
+        app.logger.info(f"> 初始化資料庫 {DB_PATH}...")
+        init_db()
+    else:
+        app.logger.info(f"> 資料庫 {DB_PATH} 已存在，跳過初始化。")
+
+    # 3. 網頁服務啟用
+    app.logger.info(f"> 啟動 {WEB_CHN_NAME} ({WEB_ENG_NAME})...")
+    app.run(host='0.0.0.0', port=5000, debug=DBG_MODE)

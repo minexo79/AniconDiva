@@ -10,7 +10,9 @@ admin_bp = Blueprint('admin', __name__, url_prefix='')
 
 # 設定（與app.py一致，或可改從app.config取得）
 config = configparser.ConfigParser()
-config.read('config.ini')
+with open('config.ini', 'r', encoding='utf-8-sig') as f:
+    config.read_file(f)
+
 HASH_SALT = config.get('security', 'hash_salt')
 
 def hash_password(password):
