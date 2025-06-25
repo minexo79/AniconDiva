@@ -26,6 +26,11 @@ app.register_blueprint(post_bp)   # 一般功能
 app.register_blueprint(admin_bp)  # 管理員功能
 
 if __name__ == '__main__':
+    # 0. 檢查執行資料夾是否存在，若不存在則建立
+    if not os.path.exists('apprun'):
+        os.makedirs('apprun')
+    DB_PATH = os.path.join('apprun', DB_PATH)
+
     # 1. 設定資料庫路徑和管理員密碼
     app.logger.info(f"> 設定資料庫路徑: {DB_PATH}")
     app.logger.info(f"> 設定管理員密碼: {ADMIN_PSWD}")
@@ -33,11 +38,10 @@ if __name__ == '__main__':
     setup_config(DB_PATH, ADMIN_PSWD, HASH_SALT)
     
     # 2. 資料庫相關初始化
+    # check path "run" has exist?
     if not os.path.exists(DB_PATH):
         app.logger.info(f"> 初始化資料庫 {DB_PATH}...")
-        init_db()
-    else:
-        app.logger.info(f"> 資料庫 {DB_PATH} 已存在，跳過初始化。")
+    init_db()
 
     # 3. 網頁服務啟用
     app.logger.info(f"> 啟動 {WEB_CHN_NAME} ({WEB_ENG_NAME})...")
