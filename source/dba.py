@@ -97,7 +97,7 @@ def get_username_by_id(user_id):
 
 # --- 貼文管理相關 -----
 
-def insert_post(nickname, content, ip, user_agent):
+def insert_post(nickname, content, ip, user_agent) -> int:
     """新增一則投稿"""
     with sqlite3.connect(DB_PATH) as conn:
         c = conn.cursor()
@@ -105,6 +105,8 @@ def insert_post(nickname, content, ip, user_agent):
         c.execute('INSERT INTO posts (nickname, content, timestamp, ip, user_agent) VALUES (?, ?, ?, ?, ?)',
                   (nickname, content, timestamp, ip, user_agent))
         conn.commit()
+        new_id = c.lastrowid
+        return new_id
 
 def get_posts_by_id(post_id):
     """根據ID查詢單則投稿（回傳list of rows）"""
