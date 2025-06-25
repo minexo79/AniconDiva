@@ -1,8 +1,9 @@
 # CosplayDivaBlack
-場次姬 - 黑名單匿名投稿平台
+場次姬 - 匿名投稿平台
 
 # 介紹
-本專案是一套專為Cosplay社團設計的黑名單匿名投稿管理系統。旨在協助圈內社群蒐集、整理、查閱各類黑名單事件，保障同好交流安全、提升圈內自我保護意識。<br>
+本專案是一套專為Cosplay社團設計的匿名投稿管理系統。<br>
+原意是旨在協助圈內社群蒐集、整理、查閱各類黑名單事件，同時能在需要的時候提供相關證明，保障同好交流安全、提升圈內自我保護意識。<br>
 若想使用該專案到你的社團/想要建置一份屬於自己的匿名平台，可以自由Clone（複製）該份專案並做些修改，爾後即可發布。
 
 ## Deploy
@@ -54,4 +55,16 @@ root/
 ├── config.ini                  # 設定檔案
 ├── README.md                   # 此專案介紹，部署教學，專案架構...等
 └── requirements.txt            # Pip 必要模組
+```
+
+# 授權
+本專案使用MIT License授權發布。
+```
+Copyright 2025 blakcat (XOT)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
