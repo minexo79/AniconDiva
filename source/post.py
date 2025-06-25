@@ -15,9 +15,10 @@ def index():
     query = request.args.get('q', '')
     # 新增投稿
     if request.method == 'POST':
+        nickname = request.form.get('nickname', '').strip()
         content = request.form.get('content', '').strip()
         if content:
-            insert_post(content, request.remote_addr, request.headers.get('User-Agent'))
+            insert_post(nickname, content, request.remote_addr, request.headers.get('User-Agent'))
         return redirect(url_for('post.index'))
     # 查詢邏輯
     if post_id:
@@ -27,7 +28,7 @@ def index():
     else:
         rows = get_all_posts()
     posts = [
-        {'id': row[0], 'content': row[1], 'timestamp': row[2], 'ip': row[3], 'user_agent': row[4]}
+        {'id': row[0], 'content': row[2], 'timestamp': row[3], 'ip': row[4], 'user_agent': row[5]}
         for row in rows
     ]
     return render_template('index.html', posts=posts, query=query)

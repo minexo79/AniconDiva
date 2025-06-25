@@ -1,0 +1,131 @@
+/* theme.css - 自訂配色 */
+
+:root {
+    --light-grey: #FBFBFB;
+    --blue-grey: #95BAC1;
+    --gold-orange: #F1A644;
+    --brown-orange: #CC8050;
+    --deep-blue: #25586C;
+}
+
+/* 背景用主色 */
+.bg-main      { background-color: var(--deep-blue) !important; }
+.bg-lightgrey { background-color: var(--light-grey) !important; }
+.bg-bluegrey  { background-color: var(--blue-grey) !important; }
+.bg-orangegold { background-color: var(--gold-orange) !important; }
+.bg-brownorange { background-color: var(--brown-orange) !important; }
+
+/* 文字顏色 */
+.text-main      { color: var(--deep-blue) !important; }
+.text-lightgrey { color: var(--light-grey) !important; }
+.text-bluegrey  { color: var(--blue-grey) !important; }
+.text-orangegold { color: var(--gold-orange) !important; }
+.text-brownorange { color: var(--brown-orange) !important; }
+
+/* 按鈕設計 */
+.btn-lightgrey {
+    color: var(--deep-blue);
+    background-color: var(--light-grey);
+    border-color: var(--blue-grey);
+    transition: background 0.2s, color 0.2s;
+}
+.btn-lightgrey:hover, .btn-lightgrey:focus {
+    background-color: var(--blue-grey);
+    color: #fff;
+    border-color: var(--deep-blue);
+}
+
+.btn-bluegrey {
+    color: #fff;
+    background-color: var(--blue-grey);
+    border-color: var(--deep-blue);
+    transition: background 0.2s, color 0.2s;
+}
+.btn-bluegrey:hover, .btn-bluegrey:focus {
+    background-color: var(--deep-blue);
+    color: #fff;
+    border-color: var(--blue-grey);
+}
+
+.btn-orangegold {
+    color: #fff;
+    background-color: var(--gold-orange);
+    border-color: var(--brown-orange);
+    transition: background 0.2s, color 0.2s;
+}
+.btn-orangegold:hover, .btn-orangegold:focus {
+    background-color: var(--brown-orange);
+    color: #fff;
+    border-color: var(--gold-orange);
+}
+
+.btn-brownorange {
+    color: #fff;
+    background-color: var(--brown-orange);
+    border-color: var(--gold-orange);
+    transition: background 0.2s, color 0.2s;
+}
+.btn-brownorange:hover, .btn-brownorange:focus {
+    background-color: var(--gold-orange);
+    color: var(--deep-blue);
+    border-color: var(--brown-orange);
+}
+
+.btn-deepblue {
+    color: #fff;
+    background-color: var(--deep-blue);
+    border-color: var(--blue-grey);
+    transition: background 0.2s, color 0.2s;
+}
+.btn-deepblue:hover, .btn-deepblue:focus {
+    background-color: var(--blue-grey);
+    color: var(--deep-blue);
+    border-color: var(--deep-blue);
+}
+
+/* 可選：覆蓋部分 Bootstrap 內建色系（non-destructive，不會影響 alert、badge 等，只動 .btn） */
+.btn-primary {
+    background-color: var(--blue-grey);
+    border-color: var(--deep-blue);
+    color: #fff;
+}
+.btn-primary:hover, .btn-primary:focus {
+    background-color: var(--deep-blue);
+    border-color: var(--blue-grey);
+    color: #fff;
+}
+.btn-secondary {
+    background-color: var(--gold-orange);
+    border-color: var(--brown-orange);
+    color: #fff;
+}
+.btn-secondary:hover, .btn-secondary:focus {
+    background-color: var(--brown-orange);
+    border-color: var(--gold-orange);
+    color: #fff;
+}
+.btn-light {
+    background-color: var(--light-grey);
+    border-color: var(--blue-grey);
+    color: var(--deep-blue);
+}
+.btn-light:hover, .btn-light:focus {
+    background-color: var(--blue-grey);
+    border-color: var(--deep-blue);
+    color: #fff;
+}
+
+/* 卡片與表單的細節修飾 */
+.card {
+    border-color: var(--blue-grey);
+}
+.card-header, .card-footer {
+    background-color: var(--light-grey);
+    color: var(--deep-blue);
+}
+.form-control:focus {
+    border-color: var(--blue-grey);
+    box-shadow: 0 0 0 0.2rem rgba(37, 88, 108, 0.2);
+}
+
+/* 可擴充: Loader, Badge, Nav...等 */

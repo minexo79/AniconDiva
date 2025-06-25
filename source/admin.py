@@ -77,10 +77,11 @@ def view_post(post_id):
     
     _post = {
         'id': post[0][0],
-        'content': post[0][1],
-        'timestamp': post[0][2],
-        'ip': post[0][3],
-        'user_agent': post[0][4]
+        'nickname': post[0][1],
+        'content': post[0][2],
+        'timestamp': post[0][3],
+        'ip': post[0][4],
+        'user_agent': post[0][5]
     }
 
     return render_template('admin_view_post.html', post=_post)
