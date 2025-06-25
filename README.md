@@ -2,11 +2,12 @@
 場次姬 - 匿名投稿平台
 
 # 介紹
-本專案是一套專為Cosplay社團設計的匿名投稿管理系統。<br>
+本專案是一套專為Cosplay愛好者們設計的匿名投稿管理系統。<br>
 原意是旨在協助圈內社群蒐集、整理、查閱各類黑名單事件，同時能在需要的時候提供相關證明，保障同好交流安全、提升圈內自我保護意識。<br>
 若想使用該專案到你的社團/想要建置一份屬於自己的匿名平台，可以自由Clone（複製）該份專案並做些修改，爾後即可發布。
 
 ## Deploy
+- 至Terminal下輸入以下指令安裝套件包。
 ```
 pip install -r requirement.txt
 ```
@@ -14,16 +15,16 @@ pip install -r requirement.txt
 ## Run
 1. 將`config_example.ini`改名成`config.ini`，並且修改以下參數：
 ```ini
-[web]
-chinese_name = 場次姬                        # 網頁中文名稱
-english_name = Cosplay Diva Black           # 網頁英文名稱
-
-
 [app]
 secret_key = Your_Super_Secret_Key_123456   # Secret
 admin_password = 1234567890abcdef           # 管理員密碼
 sql_file = web.db                           # Sqlite資料庫名稱
 debug = true                                # Flask Debug模式開關
+
+[webhook]
+discord_posted_url =                        # Discord 未審核投稿Webhook
+discord_verify_url =                        # Discord 已審核投稿Webhook
+
 
 [security]
 hash_salt = MyUltraHashSalt_XYZ             # 密碼鹽 (Hash)
@@ -32,6 +33,10 @@ hash_salt = MyUltraHashSalt_XYZ             # 密碼鹽 (Hash)
 ```
 python app.py
 ```
+or
+```
+./run.sh
+```
 3. 在瀏覽器輸入`http://127.0.0.1:5000/`瀏覽網頁。
 
 # 專案架構
@@ -39,18 +44,22 @@ python app.py
 root/
 ├── app.py                      # 主入口
 ├── templates/
-│   ├── index.html              # 公開投稿/查詢頁面
+│   ├── index.html              # 平台首頁
 │   ├── header.html             # 共用頁首
 │   ├── footer.html             # 共用頁尾
-│   ├── login.html              # 管理員登入頁面
+│   ├── login.html              # 登入頁面
+│   ├── view_post.html          # 檢視已發布投稿頁面
+│   ├── create_post.html        # 創建投稿頁面
 │   ├── navbar.html             # 公開頁面共用導航欄
-│   ├── admin_navbar.html       # 管理員共用導航欄
-│   ├── admin_users.html        # 使用者管理頁面
-│   ├── admin_view_post.html    # 管理員檢視全文頁面
-│   └── admin.html              # 管理員主頁面
+│   ├── admin_navbar.html       # (管理員) 共用導航欄
+│   ├── admin_users.html        # (管理員) 使用者管理頁面
+│   ├── admin_view_post.html    # (管理員) 檢視全文頁面
+│   ├── admin_verified.html     # (管理員) 檢視已發布投稿頁面
+│   └── admin_index.html        # (管理員) 主頁面
 ├── sources/
 │   ├── admin.py                # 管理員功能模組
 │   ├── post.py                 # 公開投稿/查詢模組
+│   ├── webhook.py              # Discord Webhook
 │   └── dba.py                  # 資料庫存取
 ├── config.ini                  # 設定檔案
 ├── README.md                   # 此專案介紹，部署教學，專案架構...等

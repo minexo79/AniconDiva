@@ -55,19 +55,29 @@ def logout():
     session.pop('admin', None)
     return redirect(url_for('admin.login'))     # <-- 用 admin.login
 
-# --- 管理後台主頁（顯示留言列表/查ID） ---
-@admin_bp.route('/admin')
+@admin_bp.route('/admin_index')
 @login_required
 def admin_index():
-    """管理後台留言列表，可用id查詢"""
+    """管理後台首頁"""
+    admin_name = session.get('admin', '未知管理員')
+    # 發佈投稿數量
+    posted_count = len(get_all_posts())
+    verified_count = len(get_all_posts())
+    return render_template('admin_index.html', admin_name=admin_name, posted_count=posted_count, verified_count=verified_count)
+
+# --- 管理後台 - 已發布投稿（顯示投稿列表/查ID） ---
+@admin_bp.route('/admin_verified')
+@login_required
+def admin_verified():
+    """管理後台已發布投稿列表，可用id查詢"""
     post_id = request.args.get('id', '').strip()
     if post_id:
         posts = get_posts_by_id(post_id)
     else:
         posts = get_all_posts()
-    return render_template('admin.html', posts=posts)
+    return render_template('admin_verified.html', posts=posts)
 
-# --- 查看留言內容 ---
+# --- 查看投稿內容 ---
 @admin_bp.route('/view_post/<int:post_id>')
 @login_required
 def view_post(post_id):
@@ -75,7 +85,7 @@ def view_post(post_id):
     # 這裡假設回傳 (id, content, time, ip) tuple
     post = get_posts_by_id(post_id)   # 你需要實作這個
     if not post:
-        return admin_index()
+        return admin_verified()
     
     _post = {
         'id': post[0][0],
@@ -89,23 +99,23 @@ def view_post(post_id):
     return render_template('admin_view_post.html', post=_post)
 
 
-# --- 刪除留言 ---
+# --- 刪除投稿 ---
 @admin_bp.route('/delete/<int:post_id>', methods=['POST'])
 @login_required
 def delete(post_id):
-    """管理員刪除留言"""
+    """管理員刪除投稿"""
     delete_post(post_id)
-    return redirect(url_for('admin.admin_index'))    # <-- 用 admin.admin_index
+    return redirect(url_for('admin.admin_verified'))    # <-- 用 admin.admin_verified   
 
-# --- 匯出留言CSV ---
+# --- 匯出投稿CSV ---
 @admin_bp.route('/export')
 @login_required
 def export():
-    """管理員匯出留言(csv)"""
+    """管理員匯出投稿(csv)"""
     rows = get_all_posts_csv()
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(['ID', 'Content', 'Timestamp', 'IP', 'User-Agent'])
+    writer.writerow(['ID', 'Nickname' ,'Content', 'Timestamp', 'IP', 'User-Agent'])
     writer.writerows(rows)
     output.seek(0)
     mem = io.BytesIO()

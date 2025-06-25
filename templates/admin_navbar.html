@@ -10,7 +10,11 @@
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
                     <a class="nav-link {% if request.endpoint == 'admin.admin_index' %}active{% endif %}"
-                        href="{{ url_for('admin.admin_index') }}">文章列表</a>
+                        href="{{ url_for('admin.admin_index') }}">首頁</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'admin.admin_verified' %}active{% endif %}"
+                        href="{{ url_for('admin.admin_verified') }}">已發布投稿</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {% if request.endpoint == 'admin.admin_users' %}active{% endif %}"

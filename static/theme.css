@@ -15,6 +15,13 @@
 .bg-orangegold { background-color: var(--gold-orange) !important; }
 .bg-brownorange { background-color: var(--brown-orange) !important; }
 
+/* 邊框用主色 */
+.border-main      { border-color: var(--deep-blue) !important; }
+.border-lightgrey { border-color: var(--light-grey) !important; }
+.border-bluegrey  { border-color: var(--blue-grey) !important; }
+.border-orangegold { border-color: var(--gold-orange) !important; }
+.border-brownorange { border-color: var(--brown-orange) !important; }
+
 /* 文字顏色 */
 .text-main      { color: var(--deep-blue) !important; }
 .text-lightgrey { color: var(--light-grey) !important; }

@@ -8,15 +8,15 @@
         <!-- nav bar -->
         {% include 'admin_navbar.html' %}
         <div class="container py-5">
-            <h2 class="mb-4">所有投稿</h2>
+            <h2 class="mb-4">已發布投稿</h2>
             <form class="row g-3 mb-3" method="get" action="">
                 <div class="col-auto">
                     <input type="number" name="id" class="form-control" placeholder="根據留言ID查詢" min="1"
                         value="{{ request.args.get('id','') }}">
                 </div>
                 <div class="col-auto">
-                    <button type="submit" class="btn btn-deepblue">查詢ID</button>
-                    <a href="{{ url_for('admin.admin_index') }}" class="btn btn-outline-secondary">全部顯示</a>
+                    <button type="submit" class="btn btn-primary">查詢ID</button>
+                    <a href="{{ url_for('admin.admin_verified') }}" class="btn btn-outline-secondary">全部顯示</a>
                     <a href="{{ url_for('admin.export') }}" class="btn btn-secondary">CSV匯出</a>
                 </div>
             </form>
@@ -66,8 +66,8 @@
             <div class="alert alert-info">目前尚無留言。</div>
             {% endif %}
         </div>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <!-- Footer -->
         {% include 'footer.html' %}
     </body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </html>

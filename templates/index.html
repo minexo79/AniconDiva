@@ -8,47 +8,26 @@
         <!-- nav bar -->
         <div class="container py-5">
             {% include 'navbar.html' %}
-            <!-- 投稿表單後加這段 -->
-            {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <strong>{{ messages[0] }}</strong>
+            <div class="row justify-content-center my-4">
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">創建投稿</h5>
+                            <p class="card-text">立即匿名發表你的投稿！</p>
+                            <a href="{{ url_for('post.create_post') }}" class="btn btn-primary">前往創建</a>
+                        </div>
+                    </div>
                 </div>
-            {% endif %}
-            {% endwith %}
-            <h2 class="mb-4">來投稿吧！</h2>
-            <form method="POST" class="mb-4" onsubmit="return confirm('確認要送出投稿嗎？');">
-                <div class="mb-3">
-                    <input type="text" name="nickname" id="nickname" class="form-control" placeholder="你的暱稱" required>
-                </div>
-                <div class="mb-3">
-                    <textarea name="content" class="form-control" rows="5" placeholder="寫下你的想法..." required></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">提交</button>
-            <hr>
-            <h2 class="mb-4">歷史投稿</h2>
-            </form>
-                <form class="row g-3 mb-4" method="get" action="">
-                <div class="col-auto">
-                    <input type="number" name="id" class="form-control" placeholder="輸入留言ID查詢" min="1" value="{{ request.args.get('id','') }}">
-                </div>
-                <div class="col-auto">
-                    <button type="submit" class="btn btn-secondary">查詢ID</button>
-                </div>
-            </form>
-            {% for post in posts %}
-            <div class="card mb-3">
-                <div class="card-body">
-                    <p class="card-text" style="white-space:pre-wrap;">{{ post.content | e }}</p>
-                    <small class="text-muted">
-                        匿名ID：{{ post.id }} / 發布於：{{ post.timestamp }}<br>
-                        <!-- IP: {{ post.ip }} | UA: {{ post.user_agent }} -->
-                    </small>
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 text-center border-orangegold">
+                        <div class="card-body">
+                            <h5 class="card-title">檢視投稿</h5>
+                            <p class="card-text">瀏覽所有已發表的投稿。</p>
+                            <a href="{{ url_for('post.view_post') }}" class="btn btn-secondary">前往檢視</a>
+                        </div>
+                    </div>
                 </div>
             </div>
-            {% else %}
-            <p class="text-muted">尚無投稿。</p>
-            {% endfor %}
         </div>
         <!-- Footer -->
         {% include 'footer.html' %}
