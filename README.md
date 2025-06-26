@@ -6,6 +6,10 @@
 原意是旨在協助圈內社群蒐集、整理、查閱各類黑名單事件，同時能在需要的時候提供相關證明，保障同好交流安全、提升圈內自我保護意識。<br>
 若想使用該專案到你的社團/想要建置一份屬於自己的匿名平台，可以自由Clone（複製）該份專案並做些修改，爾後即可發布。
 
+## Prequires
+- Python 3.10.X
+- MySQL / MariaDB
+
 ## Deploy
 - 至Terminal下輸入以下指令安裝套件包。
 ```
@@ -13,7 +17,7 @@ pip install -r requirement.txt
 ```
 
 ## Run
-1. 設定以下環境變數
+1. 設定以下環境變數至系統，或者創建.env檔案設定以下環境變數：
 
 | 變數名稱 | 用途 |
 |---------|------|
@@ -24,21 +28,27 @@ pip install -r requirement.txt
 |DEBUG_MODE|除錯模式|
 |DISCORD_POSTED_WEBHOOK|Discord 未發布投稿 Webbook URL|
 |DISCORD_VERIFIED_WEBHOOK|Discord 已審核投稿 Webbook URL|
+|MYSQL_URL|MySQL 網址|
+|MYSQL_PORT|MySQL 連線埠|
+|MYSQL_USER|MySQL 使用者|
+|MYSQL_PASSWORD|MySQL 密碼|
+|MYSQL_DATABASE|MySQL 資料庫|
 
 2. 輸入以下指令運行。
 ```
-python cosdiva.py
+python main.py
 ```
 or
 ```
-gunicorn cosdiva:app (Only Works On Linux)
+gunicorn main:app (Only Works On Linux)
 ```
 3. 在瀏覽器輸入`http://127.0.0.1:5000/`瀏覽網頁。
 
 # 專案架構
 ```
 root/
-├── cosdiva.py                  # 主入口
+├── main.py                     # 主入口
+├── envload.py                  # 讀取環境變數
 ├── templates/
 │   ├── index.html              # 平台首頁
 │   ├── header.html             # 共用頁首
@@ -58,7 +68,6 @@ root/
 │   ├── post.py                 # 公開投稿/查詢模組
 │   ├── webhook.py              # Discord Webhook
 │   └── dba.py                  # 資料庫存取
-├── config.ini                  # 設定檔案
 ├── README.md                   # 此專案介紹，部署教學，專案架構...等
 └── requirements.txt            # Pip 必要模組
 ```

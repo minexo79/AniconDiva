@@ -1,1 +1,1 @@
-web: gunicorn cosdiva:app
+web: gunicorn main:app

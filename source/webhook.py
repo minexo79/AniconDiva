@@ -21,30 +21,38 @@ def send_to_discord_webhook(webhook_url: str, anon_id: str, nickname: str, conte
                 "inline": True
             },
             {
+                "name": "內容",
+                "value": f"{content}"
+            }
+        ]
+    }
+    
+    if (nickname is None):
+        embed["fields"].append({
                 "name": "暱稱",
                 "value": f"{nickname}",
                 "inline": True
-            },
-            {
+            })
+
+    if (ip is None):
+        embed["fields"].append({
                 "name": "IP 地址",
                 "value": f"{ip}",
                 "inline": True
-            },
-            {
+            })
+
+    if (user_agent is None):
+        embed["fields"].append({
                 "name": "User-Agent",
                 "value": f"{user_agent}",
                 "inline": True
-            },
-            {
-                "name": "內容",
-                "value": f"{content}"
-            },
-        ]
-    }
+            })
+
     data = {
         "username": "場次姬 Cosplay DIVA",
         "embeds": [embed]
     }
+
     response = requests.post(webhook_url, json=data)
     response.raise_for_status()
     return response

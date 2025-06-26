@@ -104,11 +104,13 @@ def admin_env():
 
     return render_template('admin_env.html', 
                            current_user_id=current_user_id,
-                           secret_key=source.utils.SECRET_KEY,
-                           db_path=source.utils.DB_PATH,
                            debug_mode=source.utils.DBG_MODE,
                            discord_posted_url=source.utils.DISCORD_POSTED_URL,
-                           discord_verified_url=source.utils.DISCORD_VERIFY_URL)
+                           discord_verified_url=source.utils.DISCORD_VERIFY_URL,
+                           mysql_url=source.utils.MYSQL_URL,
+                           mysql_port=source.utils.MYSQL_PORT,
+                           mysql_user=source.utils.MYSQL_USER,
+                           mysql_database=source.utils.MYSQL_DATABASE)
 
 # --- 刪除投稿 ---
 @admin_bp.route('/delete/<int:post_id>', methods=['POST'])

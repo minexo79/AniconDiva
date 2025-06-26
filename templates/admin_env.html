@@ -38,7 +38,6 @@
                             System Information
                         </div>
                         <div class="card-body">
-                            <p class="card-text">Web Secret Key：{{ secret_key }}</p>
                             <p class="card-text">Debug Mode：{{ debug_mode }}</p>
                         </div>
                     </div>
@@ -56,7 +55,10 @@
                             Database Information
                         </div>
                         <div class="card-body">
-                            <p class="card-text">Database Path：{{ db_path }}</p>
+                            <p class="card-text">MySQL URL：{{ mysql_url }}</p>
+                            <p class="card-text">MySQL Port：{{ mysql_port }}</p>
+                            <p class="card-text">MySQL User：{{ mysql_user }}</p>
+                            <p class="card-text">MySQL Database：{{ mysql_database }}</p>
                         </div>
                     </div>
                 </div>
