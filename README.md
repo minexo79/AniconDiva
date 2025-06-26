@@ -31,18 +31,18 @@ hash_salt = MyUltraHashSalt_XYZ             # 密碼鹽 (Hash)
 ```
 2. 輸入以下指令運行。
 ```
-python app.py
+python cosdiva.py
 ```
 or
 ```
-./run.sh
+gunicorn cosdiva:app
 ```
 3. 在瀏覽器輸入`http://127.0.0.1:5000/`瀏覽網頁。
 
 # 專案架構
 ```
 root/
-├── app.py                      # 主入口
+├── cosdiva.py                  # 主入口
 ├── templates/
 │   ├── index.html              # 平台首頁
 │   ├── header.html             # 共用頁首

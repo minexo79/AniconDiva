@@ -6,9 +6,15 @@ from source.dba import *
 import source.utils
 import os
 
-def cosplaydiva_run():
-    # 讀取設定
-    config = configparser.ConfigParser()
+app = Flask(__name__)
+config = configparser.ConfigParser()
+
+def cosdiva_init():
+    global app
+    """
+    初始化 CosDiva 應用。
+    這個函數會在應用啟動時被調用，進行必要的初始化工作。
+    """
     with open('config.ini', 'r', encoding='utf-8-sig') as f:
         config.read_file(f)
 
@@ -20,7 +26,6 @@ def cosplaydiva_run():
     source.utils.DISCORD_POSTED_URL = config.get('webhook', 'discord_posted_url', fallback=None)
     source.utils.DISCORD_VERIFY_URL = config.get('webhook', 'discord_verify_url', fallback=None)
 
-    app = Flask(__name__)
     app.secret_key = source.utils.SECRET_KEY
     # --- 藍圖註冊 ---
     app.register_blueprint(post_bp)   # 一般功能
@@ -41,11 +46,12 @@ def cosplaydiva_run():
     # check path "run" has exist?
     if not os.path.exists(source.utils.DB_PATH):
         app.logger.info(f"> 初始化資料庫 {source.utils.DB_PATH}...")
+
     init_db()
 
-    # 3. 網頁服務啟用
-    return app
+cosdiva_init()
 
 if __name__ == '__main__':
-    _app = cosplaydiva_run()
-    _app.run(debug=source.utils.DBG_MODE, host="127.0.0.1", port=5000)
+
+    # 3. 啟動 Flask 應用
+    app.run(debug=source.utils.DBG_MODE)
