@@ -25,7 +25,6 @@ debug = true                                # Flask Debug模式開關
 discord_posted_url =                        # Discord 未審核投稿Webhook
 discord_verify_url =                        # Discord 已審核投稿Webhook
 
-
 [security]
 hash_salt = MyUltraHashSalt_XYZ             # 密碼鹽 (Hash)
 ```
