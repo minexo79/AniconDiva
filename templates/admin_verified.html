@@ -17,7 +17,6 @@
                 <div class="col-auto">
                     <button type="submit" class="btn btn-primary">查詢ID</button>
                     <a href="{{ url_for('admin.admin_verified') }}" class="btn btn-outline-secondary">全部顯示</a>
-                    <a href="{{ url_for('admin.export') }}" class="btn btn-secondary">CSV匯出</a>
                 </div>
             </form>
             {% if posts %}
@@ -28,7 +27,6 @@
                         <th>暱稱</th>
                         <th>內容</th>
                         <th>時間</th>
-                        <th>IP</th>
                         <th>操作</th>
                     </tr>
                 </thead>
@@ -37,24 +35,12 @@
                     <tr>
                         <td>{{ post[0] }}</td>
                         <td>{{ post[1] }}</td>
-                        <td>
-                            {{ post[2][:35] }}{% if post[2]|length > 35 %}...{% endif %}
-                            <a href="{{ url_for('admin.view_post', post_id=post[0]) }}"
-                                class="btn btn-sm btn-secondary ms-2">
-                                查看全文
-                            </a>
-                        </td>
+                        <td>{{ post[2][:35] }}{% if post[2]|length > 35 %}...{% endif %}</td>
                         <td>{{ post[3] }}</td>
                         <td>
-                            {{ post[4] }}
-                            <a class="btn btn-sm btn-info ms-2" target="_blank"
-                                href="https://whatismyipaddress.com/ip/{{ post[4] }}">
-                                查詢位置
-                            </a>
-                        </td>
-                        <td>
-                            <form method="post" action="{{ url_for('admin.delete', post_id=post[0]) }}"
-                                onsubmit="return confirm('確定刪除?');" style="display:inline;">
+                            <a class="btn btn-sm btn-secondary" href="{{ url_for('admin.view_post', post_id=post[0]) }}">查看全文</a>
+                            <form method="post" action="{{ url_for('admin.delete', post_id=post[0]) }}" 
+                                                onsubmit="return confirm('確定刪除?');" style="display:inline;">
                                 <button type="submit" class="btn btn-sm btn-danger">刪除</button>
                             </form>
                         </td>

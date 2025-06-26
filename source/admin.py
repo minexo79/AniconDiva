@@ -2,22 +2,16 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, send_file
 from .dba import *    # 如果你的檔案結構在 admin.py、dba.py 同一資料夾，否則直接 import dba
 import hashlib
+import source.utils
 import configparser
 import io
 import csv
 
 admin_bp = Blueprint('admin', __name__, url_prefix='')
 
-# 設定（與app.py一致，或可改從app.config取得）
-config = configparser.ConfigParser()
-with open('config.ini', 'r', encoding='utf-8-sig') as f:
-    config.read_file(f)
-
-HASH_SALT = config.get('security', 'hash_salt')
-
 def hash_password(password):
     """給密碼加鹽做sha256 hash（與主程式一致）"""
-    salted = HASH_SALT + password
+    salted = source.utils.HASH_SALT + password
     return hashlib.sha256(salted.encode('utf-8')).hexdigest()
 
 def login_required(func):
@@ -92,12 +86,30 @@ def view_post(post_id):
         'nickname': post[0][1],
         'content': post[0][2],
         'timestamp': post[0][3],
-        'ip': post[0][4],
         'user_agent': post[0][5]
     }
 
     return render_template('admin_view_post.html', post=_post)
 
+# --- 系統一覽 ---
+@admin_bp.route('/admin_env')
+@login_required
+def admin_env():
+    """管理後台系統一覽，當ID為1的管理員可見"""
+    # 取得當言管理員ID
+    current_user = session['admin']
+    row = get_user_by_name(current_user)
+    current_user_id = row[0] if row else None
+
+    return render_template('admin_env.html', 
+                           current_user_id=current_user_id,
+                           secret_key=source.utils.SECRET_KEY,
+                           db_path=source.utils.DB_PATH, 
+                           admin_password=source.utils.ADMIN_PSWD, 
+                           hash_salt=source.utils.HASH_SALT,
+                           debug_mode=source.utils.DBG_MODE,
+                           discord_posted_url=source.utils.DISCORD_POSTED_URL,
+                           discord_verified_url=source.utils.DISCORD_VERIFY_URL)
 
 # --- 刪除投稿 ---
 @admin_bp.route('/delete/<int:post_id>', methods=['POST'])

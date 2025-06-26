@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+    <head>
+        {% include 'header.html' %}
+        <title>場次姬 管理後台</title>
+    </head>
+    <body class="bg-light">
+        <!-- nav bar -->
+        {% include 'admin_navbar.html' %}
+        <div class="container py-5">
+            <div class="row">
+                <div class="col-md-6">
+                    <h2 class="mb-4">系統一覽</h2>
+                </div>
+                <!-- 只有「目前登入者 ID=1」時看的到 -->
+                {% if current_user_id == 1 %}
+                <div class="col-md-6">
+                    <div class="col mb-4">
+                        <a href="{{ url_for('admin.export') }}" class="btn btn-secondary">CSV匯出</a>
+                    </div>
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            System Information
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Web Secret Key：{{ secret_key }}</p>
+                            <p class="card-text">Web Admin Passowrd：{{ admin_password }}</p>
+                            <p class="card-text">Web Password Hash Salt：{{ hash_salt }}</p>
+                            <p class="card-text">Debug Mode：{{ debug_mode }}</p>
+                        </div>
+                    </div>
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            Webhook URLs
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Discord Posted Webhook URL：{{ discord_posted_url }}</p>
+                            <p class="card-text">Discord Verified Webhook URL：{{ discord_verified_url }}</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            Database Information
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Database Path：{{ db_path }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <p>權限不足!</p>
+                {% endif %}
+            </div>
+        </div>
+        <!-- Footer -->
+        {% include 'footer.html' %}
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>

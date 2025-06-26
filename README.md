@@ -13,29 +13,25 @@ pip install -r requirement.txt
 ```
 
 ## Run
-1. 將`config_example.ini`改名成`config.ini`，並且修改以下參數：
-```ini
-[app]
-secret_key = Your_Super_Secret_Key_123456   # Secret
-admin_password = 1234567890abcdef           # 管理員密碼
-sql_file = web.db                           # Sqlite資料庫名稱
-debug = true                                # Flask Debug模式開關
+1. 設定以下環境變數
 
-[webhook]
-discord_posted_url =                        # Discord 未審核投稿Webhook
-discord_verify_url =                        # Discord 已審核投稿Webhook
+| 變數名稱 | 用途 |
+|---------|------|
+|SQL_FILE|Sqlite3 檔案名稱|
+|WEB_SECRET_KEY|網站 Secret Key|
+|ADMIN_PASSWORD|預設 Admin 帳號密碼|
+|PASSWORD_HASH_SALT|密碼哈希加鹽|
+|DEBUG_MODE|除錯模式|
+|DISCORD_POSTED_WEBHOOK|Discord 未發布投稿 Webbook URL|
+|DISCORD_VERIFIED_WEBHOOK|Discord 已審核投稿 Webbook URL|
 
-
-[security]
-hash_salt = MyUltraHashSalt_XYZ             # 密碼鹽 (Hash)
-```
 2. 輸入以下指令運行。
 ```
 python cosdiva.py
 ```
 or
 ```
-gunicorn cosdiva:app
+gunicorn cosdiva:app (Only Works On Linux)
 ```
 3. 在瀏覽器輸入`http://127.0.0.1:5000/`瀏覽網頁。
 
@@ -52,6 +48,7 @@ root/
 │   ├── create_post.html        # 創建投稿頁面
 │   ├── navbar.html             # 公開頁面共用導航欄
 │   ├── admin_navbar.html       # (管理員) 共用導航欄
+│   ├── admin_env.html          # (管理員) 系統一覽頁面
 │   ├── admin_users.html        # (管理員) 使用者管理頁面
 │   ├── admin_view_post.html    # (管理員) 檢視全文頁面
 │   ├── admin_verified.html     # (管理員) 檢視已發布投稿頁面
