@@ -97,11 +97,15 @@ def get_username_by_id(user_id):
 
 # --- 貼文管理相關 -----
 
-def insert_post(nickname, content, ip, user_agent) -> int:
+def insert_post(nickname, content, ip, user_agent, timestamp: None) -> int:
     """新增一則投稿"""
     with sqlite3.connect(DB_PATH) as conn:
         c = conn.cursor()
-        timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+
+        if (timestamp is None):
+            # 如果沒有提供時間戳，則使用當前時間
+            timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+            
         c.execute('INSERT INTO posts (nickname, content, timestamp, ip, user_agent) VALUES (?, ?, ?, ?, ?)',
                   (nickname, content, timestamp, ip, user_agent))
         conn.commit()

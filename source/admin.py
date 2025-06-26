@@ -86,6 +86,7 @@ def view_post(post_id):
         'nickname': post[0][1],
         'content': post[0][2],
         'timestamp': post[0][3],
+        'ip': post[0][4],
         'user_agent': post[0][5]
     }
 
@@ -104,9 +105,7 @@ def admin_env():
     return render_template('admin_env.html', 
                            current_user_id=current_user_id,
                            secret_key=source.utils.SECRET_KEY,
-                           db_path=source.utils.DB_PATH, 
-                           admin_password=source.utils.ADMIN_PSWD, 
-                           hash_salt=source.utils.HASH_SALT,
+                           db_path=source.utils.DB_PATH,
                            debug_mode=source.utils.DBG_MODE,
                            discord_posted_url=source.utils.DISCORD_POSTED_URL,
                            discord_verified_url=source.utils.DISCORD_VERIFY_URL)
@@ -120,9 +119,9 @@ def delete(post_id):
     return redirect(url_for('admin.admin_verified'))    # <-- 用 admin.admin_verified   
 
 # --- 匯出投稿CSV ---
-@admin_bp.route('/export')
+@admin_bp.route('/admin_export')
 @login_required
-def export():
+def admin_export():
     """管理員匯出投稿(csv)"""
     rows = get_all_posts_csv()
     output = io.StringIO()
@@ -179,3 +178,39 @@ def delete_admin(user_id):
         delete_user_by_id(user_id)
         flash(f"已刪除管理員: {row[0]}", "danger")
     return redirect(url_for('admin.admin_users'))      # <-- 用 admin.admin_users
+
+# --- 匯入投稿CSV ---
+@admin_bp.route('/admin_import', methods=['GET', 'POST'])
+@login_required
+def admin_import():
+    """管理員匯入投稿(csv)"""
+    if request.method == 'POST':
+        file = request.files.get('file')
+        if not file or file.filename == '':
+            flash('請選擇要上傳的CSV檔案', 'warning')
+            return redirect(url_for('admin.admin_env'))
+        try:
+            stream = io.StringIO(file.stream.read().decode('utf-8-sig'))
+            reader = csv.reader(stream)
+            header = next(reader, None)
+            expected_header = ['ID', 'Nickname', 'Content', 'Timestamp', 'IP', 'User-Agent']
+            if header != expected_header:
+                flash('CSV欄位格式錯誤，請使用正確的匯出格式', 'danger')
+                return redirect(url_for('admin.admin_env'))
+            imported = 0
+            for row in reader:
+                if not any(row):
+                    continue
+                try:
+                    _, nickname, content, timestamp, ip, user_agent = row
+                    insert_post(nickname, content, ip, user_agent, timestamp)
+                    imported += 1
+                except Exception as e:
+                    flash(f'匯入失敗: {e}', 'danger')
+                    continue
+            flash(f'成功匯入 {imported} 筆投稿', 'success')
+            return redirect(url_for('admin.admin_env'))
+        except Exception as e:
+            flash(f'檔案處理失敗: {e}', 'danger')
+            return redirect(url_for('admin.admin_env'))
+    return render_template('admin_import.html')

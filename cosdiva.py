@@ -24,9 +24,9 @@ def cosdiva_init():
     # 1. Config 讀取
     source.utils.DB_PATH            = os.environ.get("SQL_FILE", "posts.db")
     source.utils.SECRET_KEY         = os.environ.get("WEB_SECRET_KEY", "Your_Super_Secret_Key_123456")
-    source.utils.ADMIN_PSWD         = os.environ.get("ADMIN_PASSWORD", "1234567890abcdef")
+    source.utils.ADMIN_PSWD         = os.environ.get("ADMIN_PASSWORD", "")
     source.utils.HASH_SALT          = os.environ.get("PASSWORD_HASH_SALT", "MyUltraHashSalt_XYZ")
-    source.utils.DBG_MODE           = os.environ.get("DEBUG_MODE", False)
+    source.utils.DBG_MODE           = os.environ.get("DEBUG_MODE", True)
     source.utils.DISCORD_POSTED_URL = os.environ.get("DISCORD_POSTED_WEBHOOK", None)
     source.utils.DISCORD_VERIFY_URL = os.environ.get("DISCORD_VERIFIED_WEBHOOK", None)
 
