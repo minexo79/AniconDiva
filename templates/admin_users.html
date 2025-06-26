@@ -4,7 +4,7 @@
         {% include 'header.html' %}
         <title>場次姬 管理後台</title>
     </head>
-    <body>
+    <body class="bg-light">
         {% include 'admin_navbar.html' %}
         <div class="container py-5">
             <h2 class="mb-4">使用者管理</h2>
@@ -72,6 +72,8 @@
                         </div>
                         <button type="submit" class="btn btn-primary">新增管理員</button>
                     </form>
+                    {% else %}
+                    <p>權限不足!</p>
                     {% endif %}
                 </div>
             </div>

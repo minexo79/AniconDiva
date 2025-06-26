@@ -1,26 +1,31 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
-    <head>
-        {% include 'header.html' %}
-        <title>場次姬 管理後台</title>
-    </head>
-    <body class="bg-light">
-        <div class="container mt-5">
-            <h3>投稿全文</h3>
-            <div><b>ID：</b>{{ post['id'] }}</div>
-            <div><b>暱稱：</b>{{ post['nickname'] }}</div>
-            <div><b>投稿時間：</b>{{ post['timestamp'] }}</div>
-            <div><b>IP：</b>{{ post['ip'] }}</div>
-            <div><b>User-Agent：</b>{{ post['user_agent'] }}</div>
-            <hr>
-            <div class="mb-3">
-                <label class="form-label fw-bold">內容</label>
-                <div class="form-control" style="min-height:120px;white-space:pre-wrap;" id="print-content">{{ post['content'] }}</div>
-            </div>
-            <a href="{{ url_for('admin.admin_verified') }}" class="btn btn-secondary mt-3">回投稿列表</a>
-            <button class="btn btn-primary mt-3 ms-2" onclick="window.print()">列印</button>
+
+<head>
+    {% include 'header.html' %}
+    <title>場次姬 管理後台</title>
+</head>
+
+<body class="bg-light">
+    <div class="container mt-5">
+        <h3>投稿全文</h3>
+        <div><b>ID：</b>{{ post['id'] }}</div>
+        <div><b>暱稱：</b>{{ post['nickname'] }}</div>
+        <div><b>投稿時間：</b>{{ post['timestamp'] }}</div>
+        <div><b>IP：</b>{{ post['ip'] }}</div>
+        <div><b>User-Agent：</b>{{ post['user_agent'] }}</div>
+        <hr>
+        <div class="mb-3">
+            <label class="form-label fw-bold">內容</label>
+            <div class="form-control" style="min-height:120px;white-space:pre-wrap;" id="print-content">{{
+                post['content'] }}</div>
         </div>
-        <!-- Footer -->
-        {% include 'footer.html' %}
-    </body>
+        <a href="{{ url_for('admin.admin_verified') }}" class="btn btn-secondary mt-3">回投稿列表</a>
+        <a href="https://whatismyipaddress.com/ip/{{ post['ip'] }}" class="btn btn-outline-secondary mt-3">查詢位置</a>
+        <button class="btn btn-primary mt-3" onclick="window.print()">列印</button>
+    </div>
+    <!-- Footer -->
+    {% include 'footer.html' %}
+</body>
+
 </html>
