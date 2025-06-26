@@ -21,7 +21,6 @@ pip install -r requirement.txt
 
 | 變數名稱 | 用途 |
 |---------|------|
-|SQL_FILE|Sqlite3 檔案名稱|
 |WEB_SECRET_KEY|網站 Secret Key|
 |ADMIN_PASSWORD|預設 Admin 帳號密碼|
 |PASSWORD_HASH_SALT|密碼哈希加鹽|
