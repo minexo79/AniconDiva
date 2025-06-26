@@ -4,6 +4,8 @@ from .dba import insert_post, get_posts_by_id, get_posts_by_keyword, get_all_pos
 from .webhook import send_to_discord_webhook
 import source.utils
 
+# 2025.6.26 Blackcat: Use HTTP_X_FORWARDED_FOR To get real IP address if use proxy
+
 post_bp = Blueprint('post', __name__)
 
 @post_bp.route('/view_post', methods=['GET', 'POST'])
@@ -32,10 +34,13 @@ def create_post():
     if request.method == 'POST':
         nickname = request.form.get('nickname', '').strip()
         content = request.form.get('content', '').strip()
+
+        # 取得 IP 地址，若有使用代理則取 HTTP_X_FORWARDED_FOR，否則取 remote_addr
+        ip_addr = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
         # 前端有擋住必填欄位，可以略過 null
         if content:
             # 假設 insert_post 回傳新 id！
-            post_new_id = insert_post(nickname, content, request.remote_addr, request.headers.get('User-Agent'))
+            post_new_id = insert_post(nickname, content, ip_addr, request.headers.get('User-Agent'))
             # 新增完直接取得所有資料，或只取得剛剛那筆也可以
             posts = get_all_posts()  # 可依需求選擇
             posts = [
