@@ -1,4 +1,4 @@
-# CosplayDivaBlack
+# Anicon DIVA - Anomynous Post Site
 場次姬 - 匿名投稿平台
 
 # 介紹
@@ -53,6 +53,7 @@ root/
 │   ├── header.html             # 共用頁首
 │   ├── footer.html             # 共用頁尾
 │   ├── login.html              # 登入頁面
+│   ├── rules.html              # 發文規則
 │   ├── view_post.html          # 檢視已發布投稿頁面
 │   ├── create_post.html        # 創建投稿頁面
 │   ├── navbar.html             # 公開頁面共用導航欄

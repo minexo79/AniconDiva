@@ -6,6 +6,7 @@ import source.utils
 
 # 2025.6.26 Blackcat: Use HTTP_X_FORWARDED_FOR To get real IP address if use proxy
 post_bp = Blueprint('post', __name__)
+
 @post_bp.route('/view_post', methods=['GET', 'POST'])
 def view_post():
     post_id = request.args.get('id', '').strip()
@@ -24,6 +25,12 @@ def view_post():
         for row in rows
     ]
     return render_template('view_post.html', posts=posts, query=query)
+
+
+@post_bp.route('/rules', methods=['GET'])
+def rules():
+    # 顯示規則頁面
+    return render_template('rules.html')
 
 @post_bp.route('/create_post', methods=['GET', 'POST'])
 def create_post():
