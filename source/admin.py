@@ -63,13 +63,31 @@ def admin_index():
 @admin_bp.route('/admin_verified')
 @login_required
 def admin_verified():
-    """管理後台已發布投稿列表，可用id查詢"""
+    """管理後台已發布投稿列表，可用id查詢，支援分頁"""
     post_id = request.args.get('id', '').strip()
+    page = int(request.args.get('page', 1))
+    per_page = 20  # 管理員頁面顯示更多內容
+    pagination = None
+    
     if post_id:
         posts = get_posts_by_id(post_id)
     else:
-        posts = get_all_posts()
-    return render_template('admin_verified.html', posts=posts)
+        posts = get_posts_with_pagination(page, per_page)
+        total_count = get_posts_count()
+        import math
+        total_pages = math.ceil(total_count / per_page)
+        pagination = {
+            'page': page,
+            'per_page': per_page,
+            'total': total_count,
+            'pages': total_pages,
+            'has_prev': page > 1,
+            'has_next': page < total_pages,
+            'prev_num': page - 1 if page > 1 else None,
+            'next_num': page + 1 if page < total_pages else None
+        }
+    
+    return render_template('admin_verified.html', posts=posts, pagination=pagination)
 
 # --- 查看投稿內容 ---
 @admin_bp.route('/view_post/<int:post_id>')

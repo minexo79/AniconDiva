@@ -1,8 +1,11 @@
 # post.py
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
-from .dba import insert_post, get_posts_by_id, get_posts_by_keyword, get_all_posts
+from .dba import (insert_post, get_posts_by_id, get_posts_by_keyword, get_all_posts,
+                  get_posts_with_pagination, get_posts_count, 
+                  get_posts_by_keyword_with_pagination, get_posts_count_by_keyword)
 from .webhook import send_to_discord_webhook
 import source.utils
+import math
 
 # 2025.6.26 Blackcat: Use HTTP_X_FORWARDED_FOR To get real IP address if use proxy
 post_bp = Blueprint('post', __name__)
@@ -10,21 +13,60 @@ post_bp = Blueprint('post', __name__)
 @post_bp.route('/view_post', methods=['GET', 'POST'])
 def view_post():
     post_id = request.args.get('id', '').strip()
-    query = request.args.get('q', '')
+    query = request.args.get('q', '').strip()
+    page = int(request.args.get('page', 1))
+    per_page = 10  # 每頁顯示10筆
     posts = []
+    pagination = None
 
     # GET 查詢流程
     if post_id:
+        # 查詢特定ID的投稿
         rows = get_posts_by_id(post_id)
+        posts = [
+            {'id': row[0], 'content': row[2], 'timestamp': row[3], 'ip': row[4], 'user_agent': row[5]}
+            for row in rows
+        ]
     elif query:
-        rows = get_posts_by_keyword(query)
+        # 關鍵字搜尋（分頁）
+        rows = get_posts_by_keyword_with_pagination(query, page, per_page)
+        posts = [
+            {'id': row[0], 'content': row[2], 'timestamp': row[3], 'ip': row[4], 'user_agent': row[5]}
+            for row in rows
+        ]
+        total_count = get_posts_count_by_keyword(query)
+        total_pages = math.ceil(total_count / per_page)
+        pagination = {
+            'page': page,
+            'per_page': per_page,
+            'total': total_count,
+            'pages': total_pages,
+            'has_prev': page > 1,
+            'has_next': page < total_pages,
+            'prev_num': page - 1 if page > 1 else None,
+            'next_num': page + 1 if page < total_pages else None
+        }
     else:
-        rows = get_all_posts()
-    posts = [
-        {'id': row[0], 'content': row[2], 'timestamp': row[3], 'ip': row[4], 'user_agent': row[5]}
-        for row in rows
-    ]
-    return render_template('view_post.html', posts=posts, query=query)
+        # 顯示所有投稿（分頁）
+        rows = get_posts_with_pagination(page, per_page)
+        posts = [
+            {'id': row[0], 'content': row[2], 'timestamp': row[3], 'ip': row[4], 'user_agent': row[5]}
+            for row in rows
+        ]
+        total_count = get_posts_count()
+        total_pages = math.ceil(total_count / per_page)
+        pagination = {
+            'page': page,
+            'per_page': per_page,
+            'total': total_count,
+            'pages': total_pages,
+            'has_prev': page > 1,
+            'has_next': page < total_pages,
+            'prev_num': page - 1 if page > 1 else None,
+            'next_num': page + 1 if page < total_pages else None
+        }
+    
+    return render_template('view_post.html', posts=posts, query=query, pagination=pagination)
 
 
 @post_bp.route('/rules', methods=['GET'])

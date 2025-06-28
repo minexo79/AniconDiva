@@ -6,6 +6,16 @@
 原意是旨在協助圈內社群蒐集、整理、查閱各類黑名單事件，同時能在需要的時候提供相關證明，保障同好交流安全、提升圈內自我保護意識。<br>
 若想使用該專案到你的社團/想要建置一份屬於自己的匿名平台，可以自由Clone（複製）該份專案並做些修改，爾後即可發布。
 
+# 功能
+- 發布 / 查看投稿
+    - 使用Connection Pool 加快連線速度
+    - 使用Discord Webhook同步發布內容
+- 管理員功能
+    - 可管理、刪除投稿內容
+    - 新增其他管理員
+    - 匯入 / 匯出投稿檔案
+
+
 ## Prequires
 - Python 3.10.X
 - MySQL / MariaDB
@@ -63,11 +73,16 @@ root/
 │   ├── admin_view_post.html    # (管理員) 檢視全文頁面
 │   ├── admin_verified.html     # (管理員) 檢視已發布投稿頁面
 │   └── admin_index.html        # (管理員) 主頁面
+├── tools/
+│   ├── fake_data_gen.py        # 假資料產生器
+├── static/
+│   ├── theme.css               # 網站配色
 ├── sources/
 │   ├── admin.py                # 管理員功能模組
 │   ├── post.py                 # 公開投稿/查詢模組
-│   ├── webhook.py              # Discord Webhook
-│   └── dba.py                  # 資料庫存取
+│   ├── webhook.py              # Discord Webhook 模組
+│   ├── dba.py                  # 資料庫存取模組
+│   └── utils.py                # 共用變數模組
 ├── README.md                   # 此專案介紹，部署教學，專案架構...等
 └── requirements.txt            # Pip 必要模組
 ```

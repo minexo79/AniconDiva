@@ -2,17 +2,33 @@
 # ----- 所有與資料庫交互的function封裝 -----
 
 import mysql.connector
+from mysql.connector import pooling
 from datetime import datetime
+import threading
 
 # MySQL 連線設定
 DB_CONFIG = None
+CONNECTION_POOL = None
+_pool_lock = threading.Lock()
 
 def setup_config(db_config: dict, admin_pswd: str, hash_salt: str):
-    """在app一開始呼叫，統一帶入db資訊和密碼鹽"""
-    global DB_CONFIG, ADMIN_PSWD, HASH_SALT
+    """在app一開始呼叫，統一帶入db資訊和密碼鹽，並初始化連接池"""
+    global DB_CONFIG, ADMIN_PSWD, HASH_SALT, CONNECTION_POOL
     DB_CONFIG = db_config
     ADMIN_PSWD = admin_pswd
     HASH_SALT = hash_salt
+    
+    # 初始化連接池
+    try:
+        CONNECTION_POOL = pooling.MySQLConnectionPool(
+            pool_name="mysql_pool",
+            pool_size=20,  # 最大連接數
+            pool_reset_session=True,
+            **DB_CONFIG
+        )
+    except mysql.connector.Error as e:
+        print(f"連接池初始化失敗: {e}")
+        CONNECTION_POOL = None
 
 def hash_password(password):
     """使用SHA-256加密密碼，並加上HASH_SALT"""
@@ -21,7 +37,17 @@ def hash_password(password):
     return hashlib.sha256(salted.encode('utf-8')).hexdigest()
 
 def get_conn():
-    return mysql.connector.connect(**DB_CONFIG)
+    """獲取資料庫連接，優先使用連接池"""
+    global CONNECTION_POOL
+    if CONNECTION_POOL:
+        try:
+            return CONNECTION_POOL.get_connection()
+        except mysql.connector.Error as e:
+            print(f"從連接池獲取連接失敗: {e}")
+            # 如果連接池失敗，回退到直接連接
+            return mysql.connector.connect(**DB_CONFIG)
+    else:
+        return mysql.connector.connect(**DB_CONFIG)
 
 def init_db():
     """初始化資料表，預設admin帳號"""
@@ -136,6 +162,38 @@ def get_all_posts():
         c = conn.cursor()
         c.execute('SELECT id, nickname, content, timestamp, ip, user_agent FROM posts ORDER BY id DESC')
         return c.fetchall()
+
+def get_posts_with_pagination(page=1, per_page=10):
+    """取得分頁投稿（排序由新到舊）"""
+    offset = (page - 1) * per_page
+    with get_conn() as conn:
+        c = conn.cursor()
+        c.execute('SELECT id, nickname, content, timestamp, ip, user_agent FROM posts ORDER BY id DESC LIMIT %s OFFSET %s', 
+                  (per_page, offset))
+        return c.fetchall()
+
+def get_posts_count():
+    """取得投稿總數"""
+    with get_conn() as conn:
+        c = conn.cursor()
+        c.execute('SELECT COUNT(*) FROM posts')
+        return c.fetchone()[0]
+
+def get_posts_by_keyword_with_pagination(query, page=1, per_page=10):
+    """根據關鍵字模糊查詢投稿（分頁）"""
+    offset = (page - 1) * per_page
+    with get_conn() as conn:
+        c = conn.cursor()
+        c.execute('SELECT id, nickname, content, timestamp, ip, user_agent FROM posts WHERE content LIKE %s ORDER BY id DESC LIMIT %s OFFSET %s', 
+                  (f'%{query}%', per_page, offset))
+        return c.fetchall()
+
+def get_posts_count_by_keyword(query):
+    """取得符合關鍵字的投稿總數"""
+    with get_conn() as conn:
+        c = conn.cursor()
+        c.execute('SELECT COUNT(*) FROM posts WHERE content LIKE %s', (f'%{query}%',))
+        return c.fetchone()[0]
 
 def delete_post(post_id):
     """刪除特定投稿"""

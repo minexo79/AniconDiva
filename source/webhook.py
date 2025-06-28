@@ -27,21 +27,21 @@ def send_to_discord_webhook(webhook_url: str, anon_id: str, nickname: str, conte
         ]
     }
     
-    if (nickname is None):
+    if (nickname is not None):
         embed["fields"].append({
                 "name": "暱稱",
                 "value": f"{nickname}",
                 "inline": True
             })
 
-    if (ip is None):
+    if (ip is not None):
         embed["fields"].append({
                 "name": "IP 地址",
                 "value": f"{ip}",
                 "inline": True
             })
 
-    if (user_agent is None):
+    if (user_agent is not None):
         embed["fields"].append({
                 "name": "User-Agent",
                 "value": f"{user_agent}",
