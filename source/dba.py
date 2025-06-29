@@ -169,7 +169,7 @@ def get_posts_by_keyword(query):
         return c.fetchall()
 
 def get_all_posts():
-    """取得所有已審核通過投稿（排序由新到舊）"""
+    """取得所有投稿（排序由新到舊）"""
     with get_conn() as conn:
         c = conn.cursor()
         c.execute('SELECT id, nickname, content, timestamp, ip, user_agent FROM posts WHERE status=%s ORDER BY id DESC', ('approved',))
@@ -180,7 +180,7 @@ def get_posts_with_pagination(page=1, per_page=10):
     offset = (page - 1) * per_page
     with get_conn() as conn:
         c = conn.cursor()
-        c.execute('SELECT id, nickname, content, timestamp, ip, user_agent FROM posts ORDER BY id DESC LIMIT %s OFFSET %s', 
+        c.execute('SELECT id, nickname, content, timestamp, ip, user_agent, status FROM posts ORDER BY id DESC LIMIT %s OFFSET %s', 
                   (per_page, offset))
         return c.fetchall()
 
@@ -240,7 +240,6 @@ def add_post_review(post_id, admin_id, decision):
         conn.commit()
 
 # 取得某投稿已審核人數
-
 def get_post_review_count(post_id):
     """取得某投稿已審核人數"""
     with get_conn() as conn:
@@ -249,7 +248,6 @@ def get_post_review_count(post_id):
         return c.fetchone()[0]
 
 # 取得管理員總數
-
 def get_total_admin_count():
     """取得管理員總數"""
     with get_conn() as conn:
@@ -258,7 +256,6 @@ def get_total_admin_count():
         return c.fetchone()[0]
 
 # 更新投稿狀態
-
 def update_post_status(post_id, status):
     """更新投稿狀態（pending/approved/rejected）"""
     with get_conn() as conn:

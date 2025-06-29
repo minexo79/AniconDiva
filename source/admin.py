@@ -6,6 +6,7 @@ import source.utils
 import configparser
 import io
 import csv
+import math
 
 # 2025.6.28 Blackcat: Implement pagination for admin_verified to speed up loading
 
@@ -60,7 +61,12 @@ def admin_index():
     verified_count = get_posts_count_by_status('approved')
     # 待審核投稿數量
     pending_count = get_posts_count_by_status('pending')
-    return render_template('admin_index.html', admin_name=admin_name, posted_count=pending_count, verified_count=verified_count)
+    # 已拒絕投稿數量
+    rejected_count = get_posts_count_by_status('rejected')
+    return render_template('admin_index.html',  admin_name=admin_name, 
+                                                posted_count=pending_count, 
+                                                verified_count=verified_count,
+                                                rejected_count=rejected_count)
 
 # --- 管理後台 - 已發布投稿（顯示投稿列表/查ID） ---
 @admin_bp.route('/admin_verified')
@@ -196,7 +202,6 @@ def admin_all_posts():
         # 篩選狀態
         posts = [post for post in posts if post[6] == status]
         total_count = get_posts_count_by_status(status)
-    import math
     total_pages = math.ceil(total_count / per_page)
     pagination = {
         'page': page,
