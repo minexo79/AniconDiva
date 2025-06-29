@@ -87,7 +87,7 @@ def create_post():
         # 取得 IP 地址，若有使用代理則取 HTTP_X_FORWARDED_FOR，否則取 remote_addr
         ip_addr = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
 
-        if (str(ip_addr).index(":") > 0):
+        if (str(ip_addr).__contains__(":") == True):
             # 如果帶有Port，取第一個冒號前的部分
             ip_addr = ip_addr.split(':')[0]
 
