@@ -64,7 +64,18 @@ def init_db():
                 content TEXT NOT NULL,
                 timestamp VARCHAR(32) NOT NULL,
                 ip VARCHAR(64) NOT NULL,
-                user_agent VARCHAR(255) NOT NULL
+                user_agent VARCHAR(255) NOT NULL,
+                status VARCHAR(16) NOT NULL DEFAULT 'pending'
+            )
+        ''')
+        # 投稿審核紀錄表
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS post_reviews (
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                post_id INT NOT NULL,
+                admin_id INT NOT NULL,
+                decision VARCHAR(16) NOT NULL,
+                UNIQUE KEY unique_review (post_id, admin_id)
             )
         ''')
         # 用戶表
@@ -131,14 +142,13 @@ def get_username_by_id(user_id):
 # --- 貼文管理相關 -----
 
 def insert_post(nickname, content, ip, user_agent, timestamp: None) -> int:
-    """新增一則投稿"""
+    """新增一則投稿，預設狀態為 pending"""
     with get_conn() as conn:
         c = conn.cursor()
         if (timestamp is None):
-            # 如果沒有提供時間戳，則使用當前時間
             timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-        c.execute('INSERT INTO posts (nickname, content, timestamp, ip, user_agent) VALUES (%s, %s, %s, %s, %s)',
-                  (nickname, content, timestamp, ip, user_agent))
+        c.execute('INSERT INTO posts (nickname, content, timestamp, ip, user_agent, status) VALUES (%s, %s, %s, %s, %s, %s)',
+                  (nickname, content, timestamp, ip, user_agent, 'pending'))
         conn.commit()
         new_id = c.lastrowid
         return new_id
@@ -159,10 +169,10 @@ def get_posts_by_keyword(query):
         return c.fetchall()
 
 def get_all_posts():
-    """取得所有投稿（排序由新到舊）"""
+    """取得所有已審核通過投稿（排序由新到舊）"""
     with get_conn() as conn:
         c = conn.cursor()
-        c.execute('SELECT id, nickname, content, timestamp, ip, user_agent FROM posts ORDER BY id DESC')
+        c.execute('SELECT id, nickname, content, timestamp, ip, user_agent FROM posts WHERE status=%s ORDER BY id DESC', ('approved',))
         return c.fetchall()
 
 def get_posts_with_pagination(page=1, per_page=10):
@@ -205,8 +215,117 @@ def delete_post(post_id):
         conn.commit()
 
 def get_all_posts_csv():
-    """取得所有投稿（for 匯出CSV）"""
+    """取得所有投稿（for 匯出CSV，含 status 欄位）"""
     with get_conn() as conn:
         c = conn.cursor()
-        c.execute('SELECT id, nickname, content, timestamp, ip, user_agent FROM posts')
+        c.execute('SELECT id, nickname, content, timestamp, ip, user_agent, status FROM posts')
         return c.fetchall()
+
+# 取得所有待審核投稿
+
+def get_pending_posts():
+    """取得所有待審核投稿（status=pending）"""
+    with get_conn() as conn:
+        c = conn.cursor()
+        c.execute('SELECT id, nickname, content, timestamp, ip, user_agent FROM posts WHERE status=%s ORDER BY id DESC', ('pending',))
+        return c.fetchall()
+
+# 新增審核紀錄
+
+def add_post_review(post_id, admin_id, decision):
+    """新增一筆投稿審核紀錄（同一管理員不可重複審核同一篇）"""
+    with get_conn() as conn:
+        c = conn.cursor()
+        c.execute('INSERT IGNORE INTO post_reviews (post_id, admin_id, decision) VALUES (%s, %s, %s)', (post_id, admin_id, decision))
+        conn.commit()
+
+# 取得某投稿已審核人數
+
+def get_post_review_count(post_id):
+    """取得某投稿已審核人數"""
+    with get_conn() as conn:
+        c = conn.cursor()
+        c.execute('SELECT COUNT(*) FROM post_reviews WHERE post_id=%s', (post_id,))
+        return c.fetchone()[0]
+
+# 取得管理員總數
+
+def get_total_admin_count():
+    """取得管理員總數"""
+    with get_conn() as conn:
+        c = conn.cursor()
+        c.execute('SELECT COUNT(*) FROM users')
+        return c.fetchone()[0]
+
+# 更新投稿狀態
+
+def update_post_status(post_id, status):
+    """更新投稿狀態（pending/approved/rejected）"""
+    with get_conn() as conn:
+        c = conn.cursor()
+        c.execute('UPDATE posts SET status=%s WHERE id=%s', (status, post_id))
+        conn.commit()
+
+def get_posts_count_by_status(status):
+    """取得指定狀態的投稿總數"""
+    with get_conn() as conn:
+        c = conn.cursor()
+        c.execute('SELECT COUNT(*) FROM posts WHERE status=%s', (status,))
+        return c.fetchone()[0]
+
+def get_approved_posts_with_pagination(page=1, per_page=10):
+    """取得分頁的已審核通過投稿（排序由新到舊）"""
+    offset = (page - 1) * per_page
+    with get_conn() as conn:
+        c = conn.cursor()
+        c.execute('SELECT id, nickname, content, timestamp, ip, user_agent FROM posts WHERE status=%s ORDER BY id DESC LIMIT %s OFFSET %s', ('approved', per_page, offset))
+        return c.fetchall()
+
+def get_approved_posts_count_by_keyword(query):
+    """取得符合關鍵字且已審核通過的投稿總數"""
+    with get_conn() as conn:
+        c = conn.cursor()
+        c.execute('SELECT COUNT(*) FROM posts WHERE status=%s AND (content LIKE %s OR nickname LIKE %s)', ('approved', f'%{query}%', f'%{query}%'))
+        return c.fetchone()[0]
+
+def get_approved_posts_by_keyword_with_pagination(query, page=1, per_page=10):
+    """根據關鍵字模糊查詢已審核通過投稿（分頁）"""
+    offset = (page - 1) * per_page
+    with get_conn() as conn:
+        c = conn.cursor()
+        c.execute('SELECT id, nickname, content, timestamp, ip, user_agent FROM posts WHERE status=%s AND (content LIKE %s OR nickname LIKE %s) ORDER BY id DESC LIMIT %s OFFSET %s', ('approved', f'%{query}%', f'%{query}%', per_page, offset))
+        return c.fetchall()
+
+def get_post_status(post_id):
+    """取得單一投稿狀態（pending/approved/rejected）"""
+    with get_conn() as conn:
+        c = conn.cursor()
+        c.execute('SELECT status FROM posts WHERE id=%s', (post_id,))
+        result = c.fetchone()
+        return result[0] if result else None
+
+
+def get_pending_posts_with_pagination(page=1, per_page=20):
+    """分頁取得待審核投稿（status=pending）"""
+    offset = (page - 1) * per_page
+    with get_conn() as conn:
+        c = conn.cursor()
+        c.execute('SELECT id, nickname, content, timestamp, ip, user_agent FROM posts WHERE status=%s ORDER BY id DESC LIMIT %s OFFSET %s', ('pending', per_page, offset))
+        return c.fetchall()
+
+
+def get_pending_posts_count():
+    """取得待審核投稿總數"""
+    with get_conn() as conn:
+        c = conn.cursor()
+        c.execute('SELECT COUNT(*) FROM posts WHERE status=%s', ('pending',))
+        return c.fetchone()[0]
+
+
+def import_post_row(nickname, content, timestamp, ip, user_agent, status):
+    """匯入單筆投稿（for CSV import）"""
+    with get_conn() as conn:
+        c = conn.cursor()
+        c.execute('INSERT INTO posts (nickname, content, timestamp, ip, user_agent, status) VALUES (%s, %s, %s, %s, %s, %s)',
+                  (nickname, content, timestamp, ip, user_agent, status))
+        conn.commit()

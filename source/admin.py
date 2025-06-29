@@ -56,26 +56,29 @@ def logout():
 def admin_index():
     """管理後台首頁"""
     admin_name = session.get('admin', '未知管理員')
-    # 發佈投稿數量
-    posted_count = len(get_all_posts())
-    verified_count = len(get_all_posts())
-    return render_template('admin_index.html', admin_name=admin_name, posted_count=posted_count, verified_count=verified_count)
+    # 已審核通過投稿數量
+    verified_count = get_posts_count_by_status('approved')
+    # 待審核投稿數量
+    pending_count = get_posts_count_by_status('pending')
+    return render_template('admin_index.html', admin_name=admin_name, posted_count=pending_count, verified_count=verified_count)
 
 # --- 管理後台 - 已發布投稿（顯示投稿列表/查ID） ---
 @admin_bp.route('/admin_verified')
 @login_required
 def admin_verified():
-    """管理後台已發布投稿列表，可用id查詢，支援分頁"""
+    """管理後台已發布投稿列表，只顯示已審核通過"""
     post_id = request.args.get('id', '').strip()
     page = int(request.args.get('page', 1))
     per_page = 20  # 管理員頁面顯示更多內容
     pagination = None
     
     if post_id:
-        posts = get_posts_by_id(post_id)
+        posts = [row for row in get_posts_by_id(post_id) if get_post_status(row[0]) == 'approved']
     else:
-        posts = get_posts_with_pagination(page, per_page)
-        total_count = get_posts_count()
+        # 只顯示已審核通過
+        all_rows = get_posts_with_pagination(page, per_page)
+        posts = [row for row in all_rows if get_post_status(row[0]) == 'approved']
+        total_count = get_posts_count_by_status('approved')
         import math
         total_pages = math.ceil(total_count / per_page)
         pagination = {
@@ -111,6 +114,101 @@ def view_post(post_id):
     }
 
     return render_template('admin_view_post.html', post=_post)
+
+# --- 管理員待審核投稿 ---
+@admin_bp.route('/admin_pending')
+@login_required
+def admin_pending():
+    """管理員待審核投稿列表（支援分頁）"""
+    page = int(request.args.get('page', 1))
+    per_page = 20
+    # 直接呼叫 dba 封裝的分頁查詢
+    posts = get_pending_posts_with_pagination(page, per_page)
+    # 計算總數量
+    total_count = get_pending_posts_count()
+    # 計算每篇投稿的審核人數
+    review_counts = {post[0]: get_post_review_count(post[0]) for post in posts}
+    # 計算總管理員數量與審核門檻
+    total_admin = get_total_admin_count()
+    # 審核門檻為總管理員數量的一半，至少1人
+    threshold = max(1, total_admin // 2)
+    import math
+    total_pages = math.ceil(total_count / per_page)
+    pagination = {
+        'page': page,
+        'per_page': per_page,
+        'total': total_count,
+        'pages': total_pages,
+        'has_prev': page > 1,
+        'has_next': page < total_pages,
+        'prev_num': page - 1 if page > 1 else None,
+        'next_num': page + 1 if page < total_pages else None
+    }
+    return render_template('admin_pending.html', posts=posts, review_counts=review_counts, threshold=threshold, pagination=pagination)
+
+@admin_bp.route('/review_post/<int:post_id>', methods=['POST'])
+@login_required
+def review_post(post_id):
+    """管理員審核投稿（通過/拒絕）"""
+    decision = request.form.get('decision')  # 'approve' or 'reject'
+    current_user = session['admin']
+    row = get_user_by_name(current_user)
+    admin_id = row[0] if row else None
+    if not admin_id:
+        flash('找不到管理員資訊', 'danger')
+        return redirect(url_for('admin.admin_pending'))
+    # 若投稿已非 pending，禁止重複審核
+    if get_post_status(post_id) != 'pending':
+        flash('此投稿已完成審核，無法重複操作', 'warning')
+        return redirect(url_for('admin.admin_pending'))
+    add_post_review(post_id, admin_id, decision)
+    # 計算已審核人數
+    review_count = get_post_review_count(post_id)
+    total_admin = get_total_admin_count()
+    threshold = max(1, total_admin // 2)
+    if decision == 'approve' and review_count >= threshold:
+        update_post_status(post_id, 'approved')
+        flash('投稿已通過審核', 'success')
+    elif decision == 'reject':
+        update_post_status(post_id, 'rejected')
+        flash('投稿已被拒絕', 'danger')
+    else:
+        flash(f'已審核，尚需 {threshold - review_count} 人審核', 'info')
+    return redirect(url_for('admin.admin_pending'))
+
+# --- 管理後台 - 全部投稿（含所有狀態） ---
+@admin_bp.route('/admin_all_posts')
+@login_required
+def admin_all_posts():
+    """管理後台全部投稿（可依狀態篩選）"""
+    page = int(request.args.get('page', 1))
+    per_page = 20
+    status = request.args.get('status', 'all')
+    # ALL: 顯示所有投稿
+    # PENDING: 待審核
+    # APPROVED: 已審核通過
+    # REJECTED: 已拒絕
+    if status == 'all':
+        posts = get_posts_with_pagination(page, per_page)
+        total_count = get_posts_count()
+    else:
+        posts = get_posts_with_pagination(page, per_page)
+        # 篩選狀態
+        posts = [post for post in posts if post[6] == status]
+        total_count = get_posts_count_by_status(status)
+    import math
+    total_pages = math.ceil(total_count / per_page)
+    pagination = {
+        'page': page,
+        'per_page': per_page,
+        'total': total_count,
+        'pages': total_pages,
+        'has_prev': page > 1,
+        'has_next': page < total_pages,
+        'prev_num': page - 1 if page > 1 else None,
+        'next_num': page + 1 if page < total_pages else None
+    }
+    return render_template('admin_all_posts.html', posts=posts, pagination=pagination, status=status)
 
 # --- 系統一覽 ---
 @admin_bp.route('/admin_env')
@@ -148,7 +246,7 @@ def admin_export():
     rows = get_all_posts_csv()
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(['ID', 'Nickname' ,'Content', 'Timestamp', 'IP', 'User-Agent'])
+    writer.writerow(['ID', 'Nickname' ,'Content', 'Timestamp', 'IP', 'User-Agent', 'Status'])
     writer.writerows(rows)
     output.seek(0)
     mem = io.BytesIO()
@@ -215,7 +313,7 @@ def admin_import():
             stream = io.StringIO(file.stream.read().decode('utf-8-sig'))
             reader = csv.reader(stream)
             header = next(reader, None)
-            expected_header = ['ID', 'Nickname', 'Content', 'Timestamp', 'IP', 'User-Agent']
+            expected_header = ['ID', 'Nickname', 'Content', 'Timestamp', 'IP', 'User-Agent', 'Status']
             if header != expected_header:
                 flash('CSV欄位格式錯誤，請使用正確的匯出格式', 'danger')
                 return redirect(url_for('admin.admin_env'))
@@ -224,8 +322,10 @@ def admin_import():
                 if not any(row):
                     continue
                 try:
-                    _, nickname, content, timestamp, ip, user_agent = row
-                    insert_post(nickname, content, ip, user_agent, timestamp)
+                    _, nickname, content, timestamp, ip, user_agent, status = row
+                    if status not in ['pending', 'approved', 'rejected']:
+                        status = 'pending'
+                    import_post_row(nickname, content, timestamp, ip, user_agent, status)
                     imported += 1
                 except Exception as e:
                     flash(f'匯入失敗: {e}', 'danger')

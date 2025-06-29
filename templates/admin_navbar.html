@@ -13,8 +13,12 @@
                         href="{{ url_for('admin.admin_index') }}">首頁</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if request.endpoint == 'admin.admin_verified' %}active{% endif %}"
-                        href="{{ url_for('admin.admin_verified') }}">已發布投稿</a>
+                    <a class="nav-link {% if request.endpoint == 'admin.admin_all_posts' %}active{% endif %}"
+                        href="{{ url_for('admin.admin_all_posts') }}">全部投稿</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'admin.admin_pending' %}active{% endif %}"
+                        href="{{ url_for('admin.admin_pending') }}">待審核投稿</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {% if request.endpoint == 'admin.admin_users' %}active{% endif %}"

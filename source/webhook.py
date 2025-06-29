@@ -51,7 +51,7 @@ def send_to_discord_webhook(webhook_url: str, anon_id: str, nickname: str, conte
             })
 
     data = {
-        "username": "場次姬 Cosplay DIVA",
+        "username": "場次姬 Anicon DIVA",
         "embeds": [embed]
     }
 

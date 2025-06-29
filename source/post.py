@@ -1,8 +1,11 @@
 # post.py
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
-from .dba import (insert_post, get_posts_by_id, get_posts_by_keyword, get_all_posts,
-                  get_posts_with_pagination, get_posts_count, 
-                  get_posts_by_keyword_with_pagination, get_posts_count_by_keyword)
+from .dba import (insert_post, get_posts_by_id, get_all_posts,
+                  get_approved_posts_by_keyword_with_pagination, 
+                  get_posts_count_by_status, 
+                  get_post_status,
+                  get_approved_posts_with_pagination, 
+                  get_approved_posts_count_by_keyword)
 from .webhook import send_to_discord_webhook
 import source.utils
 import math
@@ -18,26 +21,43 @@ def view_post():
     post_id = request.args.get('id', '').strip()
     query = request.args.get('q', '').strip()
     page = int(request.args.get('page', 1))
-    per_page = 10  # 每頁顯示10筆
+    per_page = 10  # 統一每頁顯示10筆
     posts = []
     pagination = None
 
     # GET 查詢流程
     if post_id:
-        # 查詢特定ID的投稿
+        # 查詢特定ID的投稿（僅顯示已審核通過）
         rows = get_posts_by_id(post_id)
         posts = [
             {'id': row[0], 'content': row[2], 'timestamp': row[3], 'ip': row[4], 'user_agent': row[5]}
             for row in rows
+            if get_post_status(row[0]) == 'approved'
         ]
+        total_count = len(posts)
+        total_pages = math.ceil(total_count / per_page)
+        pagination = {
+            'page': page,
+            'per_page': per_page,
+            'total': total_count,
+            'pages': total_pages,
+            'has_prev': page > 1,
+            'has_next': page < total_pages,
+            'prev_num': page - 1 if page > 1 else None,
+            'next_num': page + 1 if page < total_pages else None
+        }
+        # 只顯示當前分頁內容
+        start = (page - 1) * per_page
+        end = start + per_page
+        posts = posts[start:end]
     elif query:
-        # 關鍵字搜尋（分頁）
-        rows = get_posts_by_keyword_with_pagination(query, page, per_page)
+        # 關鍵字搜尋（分頁，僅顯示已審核通過）
+        rows = get_approved_posts_by_keyword_with_pagination(query, page, per_page)
+        total_count = get_approved_posts_count_by_keyword(query)
         posts = [
             {'id': row[0], 'content': row[2], 'timestamp': row[3], 'ip': row[4], 'user_agent': row[5]}
             for row in rows
         ]
-        total_count = get_posts_count_by_keyword(query)
         total_pages = math.ceil(total_count / per_page)
         pagination = {
             'page': page,
@@ -50,13 +70,13 @@ def view_post():
             'next_num': page + 1 if page < total_pages else None
         }
     else:
-        # 顯示所有投稿（分頁）
-        rows = get_posts_with_pagination(page, per_page)
+        # 顯示所有投稿（分頁，僅顯示已審核通過）
+        rows = get_approved_posts_with_pagination(page, per_page)
+        total_count = get_posts_count_by_status('approved')
         posts = [
             {'id': row[0], 'content': row[2], 'timestamp': row[3], 'ip': row[4], 'user_agent': row[5]}
             for row in rows
         ]
-        total_count = get_posts_count()
         total_pages = math.ceil(total_count / per_page)
         pagination = {
             'page': page,
@@ -87,7 +107,7 @@ def create_post():
         # 取得 IP 地址，若有使用代理則取 HTTP_X_FORWARDED_FOR，否則取 remote_addr
         ip_addr = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
 
-        if (str(ip_addr).index(":") > 0):
+        if (str(ip_addr).__contains__(":") == True):
             # 如果帶有Port，取第一個冒號前的部分
             ip_addr = ip_addr.split(':')[0]
 
