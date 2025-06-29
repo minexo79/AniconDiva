@@ -1,5 +1,7 @@
 import requests
 
+# 2025.6.28 Blackcat: Fix Some Post Not Displaying Issue
+
 def send_to_discord_webhook(webhook_url: str, anon_id: str, nickname: str, content: str, ip: str, user_agent: str, post_time: str):
     """
     發送訊息到 Discord Webhook (Embed格式)。

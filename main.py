@@ -12,10 +12,10 @@ import os
 app = Flask(__name__)
 config = configparser.ConfigParser()
 
-def cosdiva_init():
+def anicondiva_init():
     global app
     """
-    初始化 CosDiva 應用。
+    初始化 AniconDiva。
     這個函數會在應用啟動時被調用，進行必要的初始化工作。
     """
     # 0. 檢查執行資料夾是否存在，若不存在則建立
@@ -44,7 +44,7 @@ def cosdiva_init():
 
     init_db()
 
-cosdiva_init()
+anicondiva_init()
 
 if __name__ == '__main__':
     # 3. 啟動 Flask 應用

@@ -6,6 +6,8 @@ from mysql.connector import pooling
 from datetime import datetime
 import threading
 
+# 2025.6.28 Blackcat: Implement connection_pool to speed up loading
+
 # MySQL 連線設定
 DB_CONFIG = None
 CONNECTION_POOL = None

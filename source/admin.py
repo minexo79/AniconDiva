@@ -7,6 +7,8 @@ import configparser
 import io
 import csv
 
+# 2025.6.28 Blackcat: Implement pagination for admin_verified to speed up loading
+
 admin_bp = Blueprint('admin', __name__, url_prefix='')
 
 def hash_password(password):

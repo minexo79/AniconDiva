@@ -7,7 +7,10 @@ from .webhook import send_to_discord_webhook
 import source.utils
 import math
 
+# 2025.6.29 Blackcat: Fix IP Display Issue
+# 2025.6.28 Blackcat: Implement pagination for view_post to speed up loading
 # 2025.6.26 Blackcat: Use HTTP_X_FORWARDED_FOR To get real IP address if use proxy
+
 post_bp = Blueprint('post', __name__)
 
 @post_bp.route('/view_post', methods=['GET', 'POST'])
@@ -84,6 +87,10 @@ def create_post():
         # 取得 IP 地址，若有使用代理則取 HTTP_X_FORWARDED_FOR，否則取 remote_addr
         ip_addr = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
 
+        if (str(ip_addr).index(":") > 0):
+            # 如果帶有Port，取第一個冒號前的部分
+            ip_addr = ip_addr.split(':')[0]
+
         # 前端有擋住必填欄位，可以略過 null
         if content:
             # 假設 insert_post 回傳新 id！
@@ -95,7 +102,7 @@ def create_post():
                 for row in posts
             ]
 
-            # 如果有設定 Discord Webhook，則發送通知
+            # 如果有設定 Discord Webhook，則發送通知 
             if source.utils.DISCORD_POSTED_URL:
                 result = send_to_discord_webhook(source.utils.DISCORD_POSTED_URL, 
                                                     post_new_id, 
