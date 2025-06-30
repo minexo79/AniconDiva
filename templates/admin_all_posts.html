@@ -8,7 +8,7 @@
     {% include 'admin_navbar.html' %}
     <div class="container py-5">
         <h2 class="mb-4">全部投稿</h2>
-        <form class="mb-3" method="get" action="">
+        <form class="mb-2" method="get" action="">
             <label for="status" class="form-label">狀態：</label>
             <select name="status" id="status" class="form-select" style="width:auto;display:inline-block;">
                 <option value="all" {% if status=='all' %}selected{% endif %}>全部</option>
@@ -37,7 +37,15 @@
                     <td>{{ post[1] }}</td>
                     <td>{{ post[2][:35] }}{% if post[2]|length > 35 %}...{% endif %}</td>
                     <td>{{ post[3] }}</td>
-                    <td>{{ post[6] }}</td>
+                    <td>
+                        {% if post[6] == 'approved' %}
+                        已發布
+                        {% elif post[6] == 'rejected' %}
+                        被拒絕
+                        {% else %}
+                        待審核
+                        {% endif %}
+                    </td>
                     <td>
                         <a class="btn btn-sm btn-secondary" href="{{ url_for('admin.view_post', post_id=post[0]) }}" target="_blank">查看全文</a>
                         <form method="post" action="{{ url_for('admin.delete', post_id=post[0]) }}" onsubmit="return confirm('確定刪除?');" style="display:inline;">

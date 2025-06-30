@@ -44,12 +44,13 @@
                         </form>
                         <form method="post" action="{{ url_for('admin.review_post', post_id=post[0]) }}" style="display:inline;">
                             <input type="hidden" name="decision" value="reject">
-                            <button type="submit" class="btn btn-sm btn-warning">拒絕</button>
+                            <button type="submit" class="btn btn-sm btn-dark">拒絕</button>
                         </form>
                         <a class="btn btn-sm btn-secondary" href="{{ url_for('admin.view_post', post_id=post[0]) }}">查看全文</a>
                     </td>
                     <td>
-                        <span class="badge bg-info">已審核：{{ review_counts[post[0]] }}/{{ threshold }}</span>
+                        <span class="badge bg-info">已同意：{{ approved_review_counts[post[0]] }}/{{ threshold }}</span>
+                        <span class="badge bg-danger">已拒絕：{{ rejected_review_counts[post[0]] }}/{{ threshold }}</span>
                     </td>
                 </tr>
                 {% endfor %}

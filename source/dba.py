@@ -231,7 +231,6 @@ def get_pending_posts():
         return c.fetchall()
 
 # 新增審核紀錄
-
 def add_post_review(post_id, admin_id, decision):
     """新增一筆投稿審核紀錄（同一管理員不可重複審核同一篇）"""
     with get_conn() as conn:
@@ -239,12 +238,12 @@ def add_post_review(post_id, admin_id, decision):
         c.execute('INSERT IGNORE INTO post_reviews (post_id, admin_id, decision) VALUES (%s, %s, %s)', (post_id, admin_id, decision))
         conn.commit()
 
-# 取得某投稿已審核人數
-def get_post_review_count(post_id):
+# 取得某投稿已審核人數 (用狀態查詢)
+def get_post_review_count(post_id, decision):
     """取得某投稿已審核人數"""
     with get_conn() as conn:
         c = conn.cursor()
-        c.execute('SELECT COUNT(*) FROM post_reviews WHERE post_id=%s', (post_id,))
+        c.execute('SELECT COUNT(*) FROM post_reviews WHERE post_id=%s AND decision=%s', (post_id, decision))
         return c.fetchone()[0]
 
 # 取得管理員總數

@@ -8,6 +8,8 @@ import io
 import csv
 import math
 
+# 2025.6.20 Blackcat: Modify Verified Approved and Rejected to reach admin / 2 threshold 
+# 2025.6.29 Blackcat: Implement Verified Features
 # 2025.6.28 Blackcat: Implement pagination for admin_verified to speed up loading
 
 admin_bp = Blueprint('admin', __name__, url_prefix='')
@@ -68,38 +70,6 @@ def admin_index():
                                                 verified_count=verified_count,
                                                 rejected_count=rejected_count)
 
-# --- 管理後台 - 已發布投稿（顯示投稿列表/查ID） ---
-@admin_bp.route('/admin_verified')
-@login_required
-def admin_verified():
-    """管理後台已發布投稿列表，只顯示已審核通過"""
-    post_id = request.args.get('id', '').strip()
-    page = int(request.args.get('page', 1))
-    per_page = 20  # 管理員頁面顯示更多內容
-    pagination = None
-    
-    if post_id:
-        posts = [row for row in get_posts_by_id(post_id) if get_post_status(row[0]) == 'approved']
-    else:
-        # 只顯示已審核通過
-        all_rows = get_posts_with_pagination(page, per_page)
-        posts = [row for row in all_rows if get_post_status(row[0]) == 'approved']
-        total_count = get_posts_count_by_status('approved')
-        import math
-        total_pages = math.ceil(total_count / per_page)
-        pagination = {
-            'page': page,
-            'per_page': per_page,
-            'total': total_count,
-            'pages': total_pages,
-            'has_prev': page > 1,
-            'has_next': page < total_pages,
-            'prev_num': page - 1 if page > 1 else None,
-            'next_num': page + 1 if page < total_pages else None
-        }
-    
-    return render_template('admin_verified.html', posts=posts, pagination=pagination)
-
 # --- 查看投稿內容 ---
 @admin_bp.route('/view_post/<int:post_id>')
 @login_required
@@ -108,7 +78,7 @@ def view_post(post_id):
     # 這裡假設回傳 (id, content, time, ip) tuple
     post = get_posts_by_id(post_id)   # 你需要實作這個
     if not post:
-        return admin_verified()
+        return admin_all_posts()
     
     _post = {
         'id': post[0][0],
@@ -133,7 +103,9 @@ def admin_pending():
     # 計算總數量
     total_count = get_pending_posts_count()
     # 計算每篇投稿的審核人數
-    review_counts = {post[0]: get_post_review_count(post[0]) for post in posts}
+    approved_review_counts = {post[0]: get_post_review_count(post[0], 'approve') for post in posts}
+    rejected_review_counts = {post[0]: get_post_review_count(post[0], 'reject') for post in posts}
+
     # 計算總管理員數量與審核門檻
     total_admin = get_total_admin_count()
     # 審核門檻為總管理員數量的一半，至少1人
@@ -150,7 +122,11 @@ def admin_pending():
         'prev_num': page - 1 if page > 1 else None,
         'next_num': page + 1 if page < total_pages else None
     }
-    return render_template('admin_pending.html', posts=posts, review_counts=review_counts, threshold=threshold, pagination=pagination)
+    return render_template('admin_pending.html', posts=posts, 
+                           approved_review_counts=approved_review_counts, 
+                           rejected_review_counts=rejected_review_counts,
+                           threshold=threshold, 
+                           pagination=pagination)
 
 @admin_bp.route('/review_post/<int:post_id>', methods=['POST'])
 @login_required
@@ -167,19 +143,31 @@ def review_post(post_id):
     if get_post_status(post_id) != 'pending':
         flash('此投稿已完成審核，無法重複操作', 'warning')
         return redirect(url_for('admin.admin_pending'))
+    
     add_post_review(post_id, admin_id, decision)
+
     # 計算已審核人數
-    review_count = get_post_review_count(post_id)
+    approved_review_count = get_post_review_count(post_id, 'approve')
+    rejected_review_count = get_post_review_count(post_id, 'reject')
+
     total_admin = get_total_admin_count()
     threshold = max(1, total_admin // 2)
-    if decision == 'approve' and review_count >= threshold:
-        update_post_status(post_id, 'approved')
-        flash('投稿已通過審核', 'success')
-    elif decision == 'reject':
-        update_post_status(post_id, 'rejected')
-        flash('投稿已被拒絕', 'danger')
-    else:
-        flash(f'已審核，尚需 {threshold - review_count} 人審核', 'info')
+
+    # 達到人數門檻才通過
+    if decision == 'approve':
+        if approved_review_count < threshold:    
+            flash(f'已審核，尚需 {threshold - approved_review_count} 人審核', 'info')
+        else:
+            update_post_status(post_id, 'approved')
+            flash('投稿已通過審核', 'success')
+    # 達到人數門檻才拒絕
+    elif decision == 'reject':         
+        if rejected_review_count < threshold:
+            flash(f'已審核，尚需 {threshold - rejected_review_count} 人審核', 'info')
+        else:
+            update_post_status(post_id, 'approved')
+            flash('投稿已被拒絕', 'danger')
+
     return redirect(url_for('admin.admin_pending'))
 
 # --- 管理後台 - 全部投稿（含所有狀態） ---
