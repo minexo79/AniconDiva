@@ -14,9 +14,21 @@
                 </div>
                 <div class="col-md-6">
                     <div class="card mb-4">
-                        <dev class="card-header">已發布投稿數量</dev>
+                        <dev class="card-header">待審核投稿數量</dev>
+                        <div class="card-body">
+                            <p class="card-text h1">{{ posted_count }}</p>
+                        </div>
+                    </div>
+                    <div class="card mb-4 border-orangegold">
+                        <dev class="card-header text-orangegold">已發布投稿數量</dev>
                         <div class="card-body">
                             <p class="card-text h1">{{ verified_count }}</p>
+                        </div>
+                    </div>
+                    <div class="card border-brownorange">
+                        <dev class="card-header text-brownorange">已拒絕投稿數量</dev>
+                        <div class="card-body">
+                            <p class="card-text h1">{{ rejected_count }}</p>
                         </div>
                     </div>
                 </div>

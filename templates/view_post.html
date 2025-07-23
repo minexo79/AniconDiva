@@ -11,16 +11,10 @@
             <h2 class="mb-4">歷史投稿</h2>
             <form class="row g-3 mb-4" method="get" action="">
                 <div class="col-auto">
-                    <input type="number" name="id" class="form-control" placeholder="輸入留言ID查詢" min="1" value="{{ request.args.get('id','') }}">
+                    <input type="text" name="query" class="form-control" placeholder="輸入留言ID或關鍵字查詢" value="{{ request.args.get('query','') }}">
                 </div>
                 <div class="col-auto">
-                    <button type="submit" class="btn btn-secondary">查詢ID</button>
-                </div>
-                <div class="col-auto">
-                    <input type="text" name="q" class="form-control" placeholder="輸入關鍵字搜尋" value="{{ request.args.get('q','') }}">
-                </div>
-                <div class="col-auto">
-                    <button type="submit" class="btn btn-primary">搜尋</button>
+                    <button type="submit" class="btn btn-secondary">查詢</button>
                 </div>
             </form>
             {% for post in posts %}

@@ -1,51 +1,65 @@
 from flask import Flask
-import configparser
-from source.admin import admin_bp
-from source.post import post_bp
-from source.dba import *
+from source.dba.init import db, AdminInitDB
+from source.dba.guest import GuestDBA
+from source.dba.admin import AdminDBA
+from source.dba.post import PostDBA
 import source.utils
 import envload
-import os
 
 # 2025.6.26 Blackcat: Change to use environment variables instead of config.ini
+# 2025.7.23 Blackcat: Remove ConfigParser, use envload instead, Change dbAccess to SqlAlchemy
 
 app = Flask(__name__)
-config = configparser.ConfigParser()
+admin_init = None
 
 def anicondiva_init():
-    global app
     """
-    初始化 AniconDiva。
-    這個函數會在應用啟動時被調用，進行必要的初始化工作。
+    初始化 AniconDiva 環境設定。
     """
-    # 0. 檢查執行資料夾是否存在，若不存在則建立
-    if not os.path.exists('config'):
-        os.makedirs('config')
-
-    # 1. Config 讀取
+    # Config 讀取
     envload.load_environment_variables()
 
-    db_config = {
-        'host': source.utils.MYSQL_URL,
-        'port': source.utils.MYSQL_PORT,
-        'user': source.utils.MYSQL_USER,
-        'password': source.utils.MYSQL_PASSWORD,
-        'database': source.utils.MYSQL_DATABASE,
-        'charset': 'utf8mb4'
-    }
-
-    # --- 藍圖註冊 & Flask Scrcet Key 設定 ---
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{source.utils.MYSQL_USER}:{source.utils.MYSQL_PASSWORD}@{source.utils.MYSQL_URL}:{source.utils.MYSQL_PORT}/{source.utils.MYSQL_DATABASE}'
     app.secret_key = source.utils.SECRET_KEY
+
+def anicondiva_db_init():
+    """
+    初始化 AniconDiva 的資料庫。
+    這個函數會在應用啟動時被調用，進行必要的資料庫初始化工作。
+    """
+    global admin_init
+
+    guest_dba   = GuestDBA()
+    post_dba    = PostDBA()
+    admin_dba   = AdminDBA(hash_salt=source.utils.HASH_SALT)
+    admin_init  = AdminInitDB(admin_pswd=source.utils.ADMIN_PSWD, 
+                             hash_salt=source.utils.HASH_SALT)
+    
+    app.config['GUEST_DBA'] = guest_dba
+    app.config['ADMIN_DBA'] = admin_dba
+    app.config['POST_DBA'] = post_dba
+
+def anicondiva_app_init():
+    """
+    設定 AniconDiva 的 Flask 應用。
+    """
+    global app
+    # 藍圖註冊 & Flask Secret Key 設定
+    from source.post import post_bp
+    from source.admin import admin_bp
+
     app.register_blueprint(post_bp)   # 一般功能
     app.register_blueprint(admin_bp)  # 管理員功能
 
-    # 2. 設定資料庫路徑和管理員密碼
-    setup_config(db_config, source.utils.ADMIN_PSWD, source.utils.HASH_SALT)
-
-    init_db()
-
-anicondiva_init()
+    with app.app_context():
+        db.init_app(app)
+        admin_init.init_db()    # 初始化管理員預設帳號
 
 if __name__ == '__main__':
-    # 3. 啟動 Flask 應用
+    anicondiva_init()
+    anicondiva_db_init()
+    anicondiva_app_init()
+
+    # 5. 啟動 Flask 應用
     app.run(debug=source.utils.DBG_MODE)
