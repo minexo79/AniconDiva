@@ -56,10 +56,10 @@ def anicondiva_app_init():
         db.init_app(app)
         admin_init.init_db()    # 初始化管理員預設帳號
 
-if __name__ == '__main__':
-    anicondiva_init()
-    anicondiva_db_init()
-    anicondiva_app_init()
+anicondiva_init()
+anicondiva_db_init()
+anicondiva_app_init()
 
+if __name__ == '__main__':
     # 5. 啟動 Flask 應用
     app.run(debug=source.utils.DBG_MODE)
