@@ -4,6 +4,8 @@ from .webhook import send_to_discord_webhook
 import source.utils
 import math
 
+#TODO: Fix All Operations with using dba class
+
 # 2025.6.29 Blackcat: Fix IP Display Issue
 # 2025.6.28 Blackcat: Implement pagination for view_post to speed up loading
 # 2025.6.26 Blackcat: Use HTTP_X_FORWARDED_FOR To get real IP address if use proxy

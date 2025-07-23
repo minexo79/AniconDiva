@@ -7,6 +7,8 @@ import math
 
 admin_bp = Blueprint('admin', __name__)
 
+#TODO: Fix All Operations with using dba class
+
 # 2025.6.20 Blackcat: Modify Verified Approved and Rejected to reach admin / 2 threshold 
 # 2025.6.28 Blackcat: Implement pagination for admin_verified to speed up loading
 # 2025.6.29 Blackcat: Implement Verified Features
