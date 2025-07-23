@@ -7,7 +7,7 @@ import math
 
 admin_bp = Blueprint('admin', __name__)
 
-#TODO: Fix All Operations with using dba class
+#TODO: Fix All Operations with using dba class (NEED TEST)
 
 # 2025.6.20 Blackcat: Modify Verified Approved and Rejected to reach admin / 2 threshold 
 # 2025.6.28 Blackcat: Implement pagination for admin_verified to speed up loading
@@ -62,11 +62,11 @@ def admin_index():
     post_dba = current_app.config.get('POST_DBA')
     admin_name = session.get('admin', '未知管理員')
     # 已審核通過投稿數量
-    verified_count = post_dba.get_posts_count_by_status('approved')
+    verified_count = post_dba.get_posts_count('approved')
     # 待審核投稿數量
-    pending_count = post_dba.get_posts_count_by_status('pending')
+    pending_count = post_dba.get_posts_count('pending')
     # 已拒絕投稿數量
-    rejected_count = post_dba.get_posts_count_by_status('rejected')
+    rejected_count = post_dba.get_posts_count('rejected')
     return render_template('admin_index.html',  admin_name=admin_name, 
                                                 posted_count=pending_count, 
                                                 verified_count=verified_count,
@@ -84,12 +84,12 @@ def view_post(post_id):
         return admin_all_posts()
     
     _post = {
-        'id': post[0][0],
-        'nickname': post[0][1],
-        'content': post[0][2],
-        'timestamp': post[0][3],
-        'ip': post[0][4],
-        'user_agent': post[0][5]
+        'id': post[0].id,
+        'nickname': post[0].nickname,
+        'content': post[0].content,
+        'timestamp': post[0].timestamp,
+        'ip': post[0].ip,
+        'user_agent': post[0].user_agent
     }
 
     return render_template('admin_view_post.html', post=_post)
@@ -100,21 +100,21 @@ def view_post(post_id):
 def admin_pending():
     """管理員待審核投稿列表（支援分頁）"""
     admin_dba = current_app.config.get('ADMIN_DBA')
+    post_dba = current_app.config.get('POST_DBA')
     page = int(request.args.get('page', 1))
     per_page = 20
     # 直接呼叫 dba 封裝的分頁查詢
-    posts = admin_dba.get_posts_with_pagination(page, per_page, status='pending')
+    posts = post_dba.get_posts_with_pagination(page, per_page, status='pending')
     # 計算總數量
-    total_count = admin_dba.get_posts_count_by_status('pending')
+    total_count = post_dba.get_posts_count('pending')
     # 計算每篇投稿的審核人數
-    approved_review_counts = {post[0]: admin_dba.get_post_review_count(post[0], 'approve') for post in posts}
-    rejected_review_counts = {post[0]: admin_dba.get_post_review_count(post[0], 'reject') for post in posts}
+    approved_review_counts = {post: admin_dba.get_post_review_count(post.id, 'approve') for post in posts}
+    rejected_review_counts = {post: admin_dba.get_post_review_count(post.id, 'reject') for post in posts}
 
     # 計算總管理員數量與審核門檻
     total_admin = admin_dba.get_total_admin_count()
     # 審核門檻為總管理員數量的一半，至少1人
     threshold = max(1, total_admin // 2)
-    import math
     total_pages = math.ceil(total_count / per_page)
     pagination = {
         'page': page,
@@ -137,15 +137,16 @@ def admin_pending():
 def review_post(post_id):
     """管理員審核投稿（通過/拒絕）"""
     admin_dba = current_app.config.get('ADMIN_DBA')
+    post_dba = current_app.config.get('POST_DBA')
     decision = request.form.get('decision')  # 'approve' or 'reject'
     current_user = session['admin']
     row = admin_dba.get_user_by_name(current_user)
-    admin_id = row[0] if row else None
+    admin_id = row.id if row else None
     if not admin_id:
         flash('找不到管理員資訊', 'danger')
         return redirect(url_for('admin.admin_pending'))
     # 若投稿已非 pending，禁止重複審核
-    if admin_dba.get_post_status(post_id) != 'pending':
+    if post_dba.get_post_status(post_id) != 'pending':
         flash('此投稿已完成審核，無法重複操作', 'warning')
         return redirect(url_for('admin.admin_pending'))
     
@@ -180,8 +181,7 @@ def review_post(post_id):
 @login_required
 def admin_all_posts():
     """管理後台全部投稿（可依狀態篩選）"""
-    admin_dba = current_app.config.get('ADMIN_DBA')
-    guest_dba = current_app.config.get('GUEST_DBA')
+    post_dba = current_app.config.get('POST_DBA')
     page = int(request.args.get('page', 1))
     per_page = 20
     status = request.args.get('status', 'all')
@@ -189,15 +189,11 @@ def admin_all_posts():
     # PENDING: 待審核
     # APPROVED: 已審核通過
     # REJECTED: 已拒絕
-    if status == 'all':
-        posts = guest_dba.get_all_posts_with_pagination(page, per_page)
-        total_count = guest_dba.get_posts_count()
-    else:
-        posts = guest_dba.get_all_posts_with_pagination(page, per_page)
-        # 篩選狀態
-        posts = [post for post in posts if post[6] == status]
-        total_count = guest_dba.get_posts_count_by_status(status)
+    posts = post_dba.get_posts_with_pagination(page, per_page, status)
+    total_count = post_dba.get_posts_count(status)
+    # 計算總頁數
     total_pages = math.ceil(total_count / per_page)
+
     pagination = {
         'page': page,
         'per_page': per_page,
@@ -208,6 +204,7 @@ def admin_all_posts():
         'prev_num': page - 1 if page > 1 else None,
         'next_num': page + 1 if page < total_pages else None
     }
+
     return render_template('admin_all_posts.html', posts=posts, pagination=pagination, status=status)
 
 # --- 系統一覽 ---
@@ -218,7 +215,7 @@ def admin_env():
     admin_dba = current_app.config.get('ADMIN_DBA')
     current_user = session['admin']
     row = admin_dba.get_user_by_name(current_user)
-    current_user_id = row[0] if row else None
+    current_user_id = row.id if row else None
     return render_template('admin_env.html', 
                            current_user_id=current_user_id,
                            debug_mode=source.utils.DBG_MODE,
@@ -236,24 +233,7 @@ def delete(post_id):
     """管理員刪除投稿"""
     admin_dba = current_app.config.get('ADMIN_DBA')
     admin_dba.delete_post(post_id)
-    return redirect(url_for('admin.admin_verified'))    # <-- 用 admin.admin_verified   
-
-# --- 匯出投稿CSV ---
-@admin_bp.route('/admin_export')
-@login_required
-def admin_export():
-    """管理員匯出投稿(csv)"""
-    admin_dba = current_app.config.get('ADMIN_DBA')
-    rows = admin_dba.get_all_posts_csv()
-    output = io.StringIO()
-    writer = csv.writer(output)
-    writer.writerow(['ID', 'Nickname' ,'Content', 'Timestamp', 'IP', 'User-Agent', 'Status'])
-    writer.writerows(rows)
-    output.seek(0)
-    mem = io.BytesIO()
-    mem.write(output.getvalue().encode('utf-8-sig'))  # 加 BOM for Excel
-    mem.seek(0)
-    return send_file(mem, mimetype='text/csv', as_attachment=True, download_name='posts_export.csv')
+    return redirect(url_for('admin.admin_all_posts'))    # <-- 用 admin.admin_verified   
 
 # --- 管理員用戶管理 ---
 @admin_bp.route('/admin_users', methods=['GET', 'POST'])
@@ -280,7 +260,7 @@ def admin_users():
     users = admin_dba.get_all_users()
     current_user = session['admin']
     row = admin_dba.get_user_by_name(current_user)
-    current_user_id = row[0] if row else None
+    current_user_id = row.id if row else None
     return render_template('admin_users.html', users=users, current_user=current_user, current_user_id=current_user_id)
 
 # --- 刪除管理員 ---
@@ -295,19 +275,36 @@ def delete_admin(user_id):
     row = admin_dba.get_username_by_id(user_id)
     if not row:
         flash("管理員不存在")
-    elif row[0] == session['admin']:
+    elif row == session['admin']:
         flash("不能刪除自己！")
     else:
         admin_dba.delete_user_by_id(user_id)
-        flash(f"已刪除管理員: {row[0]}", "danger")
+        flash(f"已刪除管理員: {row}", "danger")
     return redirect(url_for('admin.admin_users'))      # <-- 用 admin.admin_users
+
+# --- 匯出投稿CSV ---
+@admin_bp.route('/admin_export')
+@login_required
+def admin_export():
+    """管理員匯出投稿(csv)"""
+    post_dba = current_app.config.get('POST_DBA')
+    rows = post_dba.get_all_posts()
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['ID', 'Nickname' ,'Content', 'Timestamp', 'IP', 'User-Agent', 'Status'])
+    writer.writerows(rows)
+    output.seek(0)
+    mem = io.BytesIO()
+    mem.write(output.getvalue().encode('utf-8-sig'))  # 加 BOM for Excel
+    mem.seek(0)
+    return send_file(mem, mimetype='text/csv', as_attachment=True, download_name='posts_export.csv')
 
 # --- 匯入投稿CSV ---
 @admin_bp.route('/admin_import', methods=['GET', 'POST'])
 @login_required
 def admin_import():
     """管理員匯入投稿(csv)"""
-    admin_dba = current_app.config.get('ADMIN_DBA')
+    guest_dba = current_app.config.get('GUEST_DBA')
     if request.method == 'POST':
         file = request.files.get('file')
         if not file or file.filename == '':
@@ -329,7 +326,7 @@ def admin_import():
                     _, nickname, content, timestamp, ip, user_agent, status = row
                     if status not in ['pending', 'approved', 'rejected']:
                         status = 'pending'
-                    admin_dba.import_post_row(nickname, content, timestamp, ip, user_agent, status)
+                    guest_dba.insert_post(nickname, content, ip, user_agent, timestamp, status)
                     imported += 1
                 except Exception as e:
                     flash(f'匯入失敗: {e}', 'danger')

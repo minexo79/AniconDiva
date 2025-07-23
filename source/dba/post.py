@@ -19,21 +19,26 @@ class PostDBA:
 
     def get_posts_with_pagination(self, page=1, per_page=10, status='approved'):
         """取得分頁的投稿（可設定狀態，排序由新到舊）"""
-        return Post.query.filter_by(status=status).order_by(Post.id.desc()).paginate(page=page, per_page=per_page, error_out=False).items
+        if (status == 'all'):
+            return Post.query.order_by(Post.id.desc()).paginate(page=page, per_page=per_page, error_out=False).items
+        else:
+            return Post.query.filter_by(status=status).order_by(Post.id.desc()).paginate(page=page, per_page=per_page, error_out=False).items
 
     def get_posts_by_keyword_with_pagination(self, query, page=1, per_page=10, status='approved'):
         """根據關鍵字模糊查詢投稿（分頁，可設定狀態）"""
-        return Post.query.filter(Post.status==status, (Post.content.like(f'%{query}%') | Post.nickname.like(f'%{query}%'))).order_by(Post.id.desc()).paginate(page=page, per_page=per_page, error_out=False).items
+        if (status == 'all'):
+            return Post.query.filter(Post.content.like(f'%{query}%')).order_by(Post.id.desc()).paginate(page=page, per_page=per_page, error_out=False).items
+        else:
+            return Post.query.filter(Post.status==status, (Post.content.like(f'%{query}%') | Post.nickname.like(f'%{query}%'))).order_by(Post.id.desc()).paginate(page=page, per_page=per_page, error_out=False).items
 
     def get_post_status(self, post_id):
         """取得單一投稿狀態（pending/approved/rejected）"""
         post = Post.query.filter_by(id=post_id).first()
         return post.status if post else None
 
-    def get_posts_count(self):
-        """取得所有的投稿總數"""
-        return Post.query.count()
-
-    def get_posts_count_by_status(self, status='approved'):
-        """取得指定狀態的投稿總數"""
-        return Post.query.filter_by(status=status).count()
+    def get_posts_count(self, status='approved'):
+        """取得投稿總數（可設定狀態）"""
+        if (status == 'all'):
+            return Post.query.count()
+        else:
+            return Post.query.filter_by(status=status).count()

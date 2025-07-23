@@ -65,3 +65,10 @@ class AdminDBA:
         if post:
             post.status = status
             db.session.commit()
+
+    def delete_post(self, post_id):
+        """刪除投稿"""
+        post = Post.query.get(post_id)
+        if post:
+            db.session.delete(post)
+            db.session.commit()

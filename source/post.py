@@ -4,7 +4,7 @@ from .webhook import send_to_discord_webhook
 import source.utils
 import math
 
-#TODO: Fix All Operations with using dba class
+#TODO: Fix All Operations with using dba class (NEED TEST)
 
 # 2025.6.29 Blackcat: Fix IP Display Issue
 # 2025.6.28 Blackcat: Implement pagination for view_post to speed up loading
@@ -29,9 +29,9 @@ def view_post():
             # 查詢特定ID的投稿（僅顯示已審核通過）
             rows = post_dba.get_posts_by_id(query)
             posts = [
-                {'id': row[0], 'content': row[2], 'timestamp': row[3], 'ip': row[4], 'user_agent': row[5]}
+                {'id': row.id, 'content': row.content, 'timestamp': row.timestamp, 'ip': row.ip, 'user_agent': row.user_agent}
                 for row in rows
-                if post_dba.get_post_status(row[0]) == 'approved'
+                if post_dba.get_post_status(row.id) == 'approved'
             ]
             total_count = len(posts)
             total_pages = math.ceil(total_count / per_page)
@@ -52,9 +52,9 @@ def view_post():
         else:
             # 關鍵字搜尋（分頁，僅顯示已審核通過）
             rows = post_dba.get_posts_by_keyword_with_pagination(query, page, per_page, 'approved')
-            total_count = rows.count()
+            total_count = rows.__len__()
             posts = [
-                {'id': row[0], 'content': row[2], 'timestamp': row[3], 'ip': row[4], 'user_agent': row[5]}
+                {'id': row.id, 'content': row.content, 'timestamp': row.timestamp, 'ip': row.ip, 'user_agent': row.user_agent}
                 for row in rows
             ]
             total_pages = math.ceil(total_count / per_page)
@@ -71,9 +71,9 @@ def view_post():
     else:
         # 顯示所有投稿（分頁，僅顯示已審核通過）
         rows = post_dba.get_posts_with_pagination(page, per_page, 'approved')
-        total_count = post_dba.get_posts_count_by_status('approved')
+        total_count = post_dba.get_posts_count('approved')
         posts = [
-            {'id': row[0], 'content': row[2], 'timestamp': row[3], 'ip': row[4], 'user_agent': row[5]}
+            {'id': row.id, 'content': row.content, 'timestamp': row.timestamp, 'ip': row.ip, 'user_agent': row.user_agent}
             for row in rows
         ]
         total_pages = math.ceil(total_count / per_page)

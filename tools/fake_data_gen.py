@@ -23,7 +23,7 @@ def generate_row(idx):
         (datetime.now() - timedelta(minutes=random.randint(0, NUM_ROWS))).isoformat(sep=' ', timespec='seconds'),
         fake.ipv4(),
         fake.user_agent(),
-        random.choice(["pending"])
+        random.choice(["pending", "approved", "rejected"])
     ]
 
 # Output file name
