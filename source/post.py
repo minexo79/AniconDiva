@@ -10,6 +10,7 @@ import math
 # 2025.6.28 Blackcat: Implement pagination for view_post to speed up loading
 # 2025.6.26 Blackcat: Use HTTP_X_FORWARDED_FOR To get real IP address if use proxy
 # 2025.7.23 Blackcat: Change id & q request.args.get to content & Change dbaccess to SqlAlchemy
+# 2025.7.25 Blackcat: Get Only One Post by ID in create_post To Improve Performance
 
 post_bp = Blueprint('post', __name__)
 
@@ -116,12 +117,8 @@ def create_post():
         if content:
             # 假設 insert_post 回傳新 id！
             post_new_id = guest_dba.insert_post(nickname, content, ip_addr, request.headers.get('User-Agent'), None)
-            # 新增完直接取得所有資料，或只取得剛剛那筆也可以
-            posts = post_dba.get_all_posts()  # 可依需求選擇
-            posts = [
-                {'id': row[0], 'content': row[2], 'timestamp': row[3], 'ip': row[4], 'user_agent': row[5]}
-                for row in posts
-            ]
+            # 取得剛剛那筆投稿
+            posts = post_dba.get_posts_by_id(post_new_id)  # 可依需求選擇
 
             # 如果有設定 Discord Webhook，則發送通知 
             if source.utils.DISCORD_POSTED_URL:
@@ -131,7 +128,7 @@ def create_post():
                                                     content, 
                                                     ip_addr, 
                                                     request.headers.get('User-Agent'), 
-                                                    posts[0]['timestamp'])
+                                                    posts.timestamp)
                 
                 current_app.logger.info(f"Discord Webhook 發送結果: {result.status_code} - {result.text}")
 

@@ -15,7 +15,7 @@ class PostDBA:
 
     def get_all_posts(self):
         """取得所有投稿（排序由新到舊）"""
-        return Post.query.filter_by(status='approved').order_by(Post.id.desc()).all()
+        return Post.query.order_by(Post.id.desc()).all()
 
     def get_posts_with_pagination(self, page=1, per_page=10, status='approved'):
         """取得分頁的投稿（可設定狀態，排序由新到舊）"""

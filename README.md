@@ -16,8 +16,8 @@
     - 匯入 / 匯出投稿檔案
 
 ## Prequires
-- Python 3.10.X
-- MySQL / MariaDB
+- Python 3.12.X
+- MySQL
 
 ## Deploy
 - 至Terminal下輸入以下指令安裝套件包。

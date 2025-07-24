@@ -13,6 +13,7 @@ admin_bp = Blueprint('admin', __name__)
 # 2025.6.28 Blackcat: Implement pagination for admin_verified to speed up loading
 # 2025.6.29 Blackcat: Implement Verified Features
 # 2025.7.23 Blackcat: Remove ConfigParser, use envload instead, Change dbaccess to SqlAlchemy
+# 2025.7.25 Blackcar: Export CSV Changed to For Loop & Fix Pending Number Not Showing Issue
 
 def hash_password(password):
     """給密碼加鹽做sha256 hash（與主程式一致）"""
@@ -107,9 +108,10 @@ def admin_pending():
     posts = post_dba.get_posts_with_pagination(page, per_page, status='pending')
     # 計算總數量
     total_count = post_dba.get_posts_count('pending')
+
     # 計算每篇投稿的審核人數
-    approved_review_counts = {post: admin_dba.get_post_review_count(post.id, 'approve') for post in posts}
-    rejected_review_counts = {post: admin_dba.get_post_review_count(post.id, 'reject') for post in posts}
+    approved_review_counts = {post.id: admin_dba.get_post_review_count(post.id, 'approve') for post in posts}
+    rejected_review_counts = {post.id: admin_dba.get_post_review_count(post.id, 'reject') for post in posts}
 
     # 計算總管理員數量與審核門檻
     total_admin = admin_dba.get_total_admin_count()
@@ -292,7 +294,11 @@ def admin_export():
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow(['ID', 'Nickname' ,'Content', 'Timestamp', 'IP', 'User-Agent', 'Status'])
-    writer.writerows(rows)
+
+    # 遍歷所有投稿資料，寫入CSV
+    for row in rows:
+        writer.writerow([row.id, row.nickname, row.content, row.timestamp, row.ip, row.user_agent, row.status])
+
     output.seek(0)
     mem = io.BytesIO()
     mem.write(output.getvalue().encode('utf-8-sig'))  # 加 BOM for Excel
