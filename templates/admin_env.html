@@ -55,10 +55,14 @@
                             Database Information
                         </div>
                         <div class="card-body">
-                            <p class="card-text">MySQL URL：{{ mysql_url }}</p>
-                            <p class="card-text">MySQL Port：{{ mysql_port }}</p>
-                            <p class="card-text">MySQL User：{{ mysql_user }}</p>
-                            <p class="card-text">MySQL Database：{{ mysql_database }}</p>
+                            {% if debug_mode == 'True' %}
+                                <p class="card-text">File：test.db</p>
+                            {% else %}
+                                <p class="card-text">MySQL URL：{{ mysql_url }}</p>
+                                <p class="card-text">MySQL Port：{{ mysql_port }}</p>
+                                <p class="card-text">MySQL User：{{ mysql_user }}</p>
+                                <p class="card-text">MySQL Database：{{ mysql_database }}</p>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

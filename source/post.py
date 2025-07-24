@@ -1,7 +1,7 @@
 # post.py
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from .webhook import send_to_discord_webhook
-import source.utils
+from .utils import config
 import math
 
 #TODO: Fix All Operations with using dba class (NEED TEST)
@@ -121,8 +121,8 @@ def create_post():
             posts = post_dba.get_posts_by_id(post_new_id)  # 可依需求選擇
 
             # 如果有設定 Discord Webhook，則發送通知 
-            if source.utils.DISCORD_POSTED_URL:
-                result = send_to_discord_webhook(source.utils.DISCORD_POSTED_URL, 
+            if config.DISCORD_POSTED_URL:
+                result = send_to_discord_webhook(config.DISCORD_POSTED_URL, 
                                                     post_new_id, 
                                                     nickname, 
                                                     content, 
