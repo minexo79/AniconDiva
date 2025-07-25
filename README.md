@@ -87,7 +87,6 @@ root/
 │   │   ├── model.py            # Database 模型
 │   │   └── post.py             # Database Post 操作模組
 │   ├── utils
-│   │   ├── config.py           # 共用變數
 │   │   └── envload.py          # 環境變數載入
 │   ├── admin.py                # Web Admin 頁面功能模組
 │   ├── post.py                 # Web 公開頁面功能模組

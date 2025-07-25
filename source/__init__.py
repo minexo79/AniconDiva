@@ -4,7 +4,6 @@ from .dba.guest import GuestDBA
 from .dba.admin import AdminDBA
 from .dba.post import PostDBA
 from .utils import envload
-from .utils import config
 import os
 
 # 2025.6.26 Blackcat: Change to use environment variables instead of config.ini
@@ -19,19 +18,22 @@ def anicondiva_init() -> Flask:
     """
     初始化 AniconDiva 環境設定。
     """
-    # Config 讀取
-    envload.load_environment_variables()
-
     # Get the parent directory (project root) for templates and static files
     app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
-    app.secret_key      = config.SECRET_KEY
-    app.config['DEBUG'] = config.DBG_MODE
+
+    # 直接將環境變數寫入 app.config
+    envload.load_environment_variables(app)
+
+    app.secret_key = app.config['SECRET_KEY']
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    if (config.DBG_MODE):
-        app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(project_root, 'test.db')}'
+    if app.config['DEBUG']:
+        app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(project_root, 'test.db')}"
     else:
-        app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{config.MYSQL_USER}:{config.MYSQL_PASSWORD}@{config.MYSQL_URL}:{config.MYSQL_PORT}/{config.MYSQL_DATABASE}'
+        app.config['SQLALCHEMY_DATABASE_URI'] = (
+            f"mysql+pymysql://{app.config['MYSQL_USER']}:{app.config['MYSQL_PASSWORD']}@"
+            f"{app.config['MYSQL_URL']}:{app.config['MYSQL_PORT']}/{app.config['MYSQL_DATABASE']}"
+        )
 
     """
     初始化 AniconDiva 的資料庫。
@@ -39,8 +41,8 @@ def anicondiva_init() -> Flask:
     """
     guest_dba   = GuestDBA()
     post_dba    = PostDBA()
-    admin_dba   = AdminDBA(hash_salt=config.HASH_SALT)
-    admin_init  = AdminInitDB(admin_pswd=config.ADMIN_PSWD, hash_salt=config.HASH_SALT)
+    admin_dba   = AdminDBA(hash_salt=app.config['HASH_SALT'])
+    admin_init  = AdminInitDB(admin_pswd=app.config['ADMIN_PSWD'], hash_salt=app.config['HASH_SALT'])
     
     app.config['GUEST_DBA'] = guest_dba
     app.config['ADMIN_DBA'] = admin_dba

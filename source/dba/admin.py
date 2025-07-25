@@ -4,16 +4,10 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from .model import Post, PostReview, User
 from .init import db
-import hashlib
 
 class AdminDBA:
     def __init__(self, hash_salt):
         self.hash_salt = hash_salt
-
-    def hash_password(self, password):
-        """使用SHA-256加密密碼，並加上HASH_SALT"""
-        salted = self.hash_salt + password
-        return hashlib.sha256(salted.encode('utf-8')).hexdigest()
 
     def get_user_by_name_pw(self, username, pw_hash):
         """用帳號+密碼hash查詢用戶資料（for login）"""
