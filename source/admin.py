@@ -5,15 +5,13 @@ import io
 import csv
 import math
 
-admin_bp = Blueprint('admin', __name__)
-
-#TODO: Fix All Operations with using dba class (NEED TEST)
-
 # 2025.6.20 Blackcat: Modify Verified Approved and Rejected to reach admin / 2 threshold 
 # 2025.6.28 Blackcat: Implement pagination for admin_verified to speed up loading
 # 2025.6.29 Blackcat: Implement Verified Features
 # 2025.7.23 Blackcat: Remove ConfigParser, use envload instead, Change dbaccess to SqlAlchemy
 # 2025.7.25 Blackcar: Export CSV Changed to For Loop & Fix Pending Number Not Showing Issue
+
+admin_bp = Blueprint('admin', __name__)
 
 def hash_password(password):
     """給密碼加鹽做sha256 hash（與主程式一致）"""

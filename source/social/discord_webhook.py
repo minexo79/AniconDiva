@@ -1,7 +1,9 @@
 import requests
 
 # 2025.6.28 Blackcat: Fix Some Post Not Displaying Issue
-def send_to_discord_webhook(webhook_url: str, anon_id: str, nickname: str, content: str, ip: str, user_agent: str, post_time: str):
+# 2025.7.26 Blackcat: Using Social Mode Instead webhook
+
+def send(webhook_url: str, anon_id: str, nickname: str, content: str, ip: str, user_agent: str, post_time: str):
     """
     發送訊息到 Discord Webhook (Embed格式)。
     :param webhook_url: Discord Webhook 的 URL
