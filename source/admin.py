@@ -1,6 +1,6 @@
 # admin.py
 from flask import current_app, Blueprint, render_template, request, redirect, url_for, session, flash, send_file
-from .utils import config
+from .utils.hash import hash_password
 import io
 import csv
 import math
@@ -12,11 +12,6 @@ import math
 # 2025.7.25 Blackcar: Export CSV Changed to For Loop & Fix Pending Number Not Showing Issue
 
 admin_bp = Blueprint('admin', __name__)
-
-def hash_password(password):
-    """給密碼加鹽做sha256 hash（與主程式一致）"""
-    admin_dba = current_app.config.get('ADMIN_DBA')
-    return admin_dba.hash_password(password)
 
 from functools import wraps
 def login_required(func):
@@ -36,7 +31,7 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        pw_hash = hash_password(password)
+        pw_hash = hash_password(password, admin_dba.hash_salt)
         user = admin_dba.get_user_by_name_pw(username, pw_hash)
         if user:
             session['admin'] = username
@@ -218,13 +213,13 @@ def admin_env():
     current_user_id = row.id if row else None
     return render_template('admin_env.html', 
                            current_user_id=current_user_id,
-                           debug_mode=config.DBG_MODE,
-                           discord_posted_url=config.DISCORD_POSTED_URL,
-                           discord_verified_url=config.DISCORD_VERIFY_URL,
-                           mysql_url=config.MYSQL_URL,
-                           mysql_port=config.MYSQL_PORT,
-                           mysql_user=config.MYSQL_USER,
-                           mysql_database=config.MYSQL_DATABASE)
+                           debug_mode=current_app.config.get('DEBUG'),
+                           discord_posted_url=current_app.config.get('DISCORD_POSTED_URL'),
+                           discord_verified_url=current_app.config.get('DISCORD_VERIFY_URL'),
+                           mysql_url=current_app.config.get('MYSQL_URL'),
+                           mysql_port=current_app.config.get('MYSQL_PORT'),
+                           mysql_user=current_app.config.get('MYSQL_USER'),
+                           mysql_database=current_app.config.get('MYSQL_DATABASE'))
 
 # --- 刪除投稿 ---
 @admin_bp.route('/delete/<int:post_id>', methods=['POST'])
@@ -252,7 +247,7 @@ def admin_users():
         elif admin_dba.get_user_by_name(username):
             flash('帳號已存在')
         else:
-            pw_hash = hash_password(password)
+            pw_hash = hash_password(password, admin_dba.hash_salt)
             admin_dba.insert_user(username, pw_hash)
             flash('成功新增管理員')
         return redirect(url_for('admin.admin_users'))   # <-- 用 admin.admin_users

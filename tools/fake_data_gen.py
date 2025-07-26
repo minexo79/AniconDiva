@@ -30,7 +30,7 @@ def generate_row(idx):
 filename = "sample_data.csv"
 
 # Header
-header = ["ID", "Nickname", "Content", "Timestamp", "IP", "User-Agent", "Status"]
+header = ["ID", "Nickname", "Content", "Timestamp", "IP", "User-Agent", "status"]
 
 with open(filename, mode='w', encoding='utf-8', newline='') as file:
     writer = csv.writer(file)

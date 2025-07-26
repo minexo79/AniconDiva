@@ -1,7 +1,6 @@
 # post.py
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from . import social
-from .utils import config
 import math
 
 # 2025.6.29 Blackcat: Fix IP Display Issue

@@ -8,15 +8,18 @@
     {% include 'admin_navbar.html' %}
     <div class="container py-5">
         <h2 class="mb-4">全部投稿</h2>
-        <form class="mb-2" method="get" action="">
-            <label for="status" class="form-label">狀態：</label>
-            <select name="status" id="status" class="form-select" style="width:auto;display:inline-block;">
-                <option value="all" {% if status=='all' %}selected{% endif %}>全部</option>
-                <option value="approved" {% if status=='approved' %}selected{% endif %}>已發布</option>
-                <option value="pending" {% if status=='pending' %}selected{% endif %}>待審核</option>
-                <option value="rejected" {% if status=='rejected' %}selected{% endif %}>被拒絕</option>
-            </select>
-            <button type="submit" class="btn btn-primary ms-2">篩選</button>
+        <form class="row mb-2" method="get" action="">
+            <div class="col-auto">
+                <select name="status" id="status" class="form-select" style="width:auto;display:inline-block;">
+                    <option value="all" {% if status=='all' %}selected{% endif %}>全部</option>
+                    <option value="approved" {% if status=='approved' %}selected{% endif %}>已發布</option>
+                    <option value="pending" {% if status=='pending' %}selected{% endif %}>待審核</option>
+                    <option value="rejected" {% if status=='rejected' %}selected{% endif %}>被拒絕</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary ms-2">篩選</button>
+            </div>
         </form>
         {% if posts %}
         <table class="table table-striped table-hover">
@@ -41,7 +44,7 @@
                         {% if post.status == 'approved' %}
                         已發布
                         {% elif post.status == 'rejected' %}
-                        被拒絕
+                        已拒絕
                         {% else %}
                         待審核
                         {% endif %}

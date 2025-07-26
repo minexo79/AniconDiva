@@ -1,10 +1,11 @@
 from flask import Flask
-from .dba.init import db, AdminInitDB
+from .dba.init import InitDB
 from .dba.guest import GuestDBA
 from .dba.admin import AdminDBA
 from .dba.post import PostDBA
+from .dba.model import db
 from .utils import envload
-from .utils import config
+from .utils.default_dict import DefaultDict 
 import os
 
 # 2025.6.26 Blackcat: Change to use environment variables instead of config.ini
@@ -19,29 +20,33 @@ def anicondiva_init() -> Flask:
     """
     初始化 AniconDiva 環境設定。
     """
-    # Config 讀取
-    envload.load_environment_variables()
-
     # Get the parent directory (project root) for templates and static files
     app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
-    app.secret_key      = config.SECRET_KEY
-    app.config['DEBUG'] = config.DBG_MODE
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    if (config.DBG_MODE):
-        app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(project_root, 'test.db')}'
+    # 將環境變數寫入 app.config
+    envload.load_environment_variables(app)
+
+    app.secret_key = app.config['SECRET_KEY']
+
+    if app.config['DEBUG']:
+        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+        app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(project_root, 'test.db')}"
     else:
-        app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{config.MYSQL_USER}:{config.MYSQL_PASSWORD}@{config.MYSQL_URL}:{config.MYSQL_PORT}/{config.MYSQL_DATABASE}'
+        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+        app.config['SQLALCHEMY_DATABASE_URI'] = (
+            f"mysql+pymysql://{app.config['MYSQL_USER']}:{app.config['MYSQL_PASSWORD']}@"
+            f"{app.config['MYSQL_URL']}:{app.config['MYSQL_PORT']}/{app.config['MYSQL_DATABASE']}"
+        )
 
     """
     初始化 AniconDiva 的資料庫。
     這個函數會在應用啟動時被調用，進行必要的資料庫初始化工作。
     """
-    guest_dba   = GuestDBA()
     post_dba    = PostDBA()
-    admin_dba   = AdminDBA(hash_salt=config.HASH_SALT)
-    admin_init  = AdminInitDB(admin_pswd=config.ADMIN_PSWD, hash_salt=config.HASH_SALT)
-    
+    guest_dba   = GuestDBA(db)
+    admin_dba   = AdminDBA(hash_salt=app.config['HASH_SALT'], db=db)
+    admin_init  = InitDB(db=db, admin_pswd=app.config['ADMIN_PSWD'], hash_salt=app.config['HASH_SALT'], default_dict=DefaultDict())
+
     app.config['GUEST_DBA'] = guest_dba
     app.config['ADMIN_DBA'] = admin_dba
     app.config['POST_DBA']  = post_dba

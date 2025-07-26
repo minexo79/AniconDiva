@@ -3,9 +3,11 @@
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from .model import Post
-from .init import db
 
 class GuestDBA:
+    def __init__(self, db: SQLAlchemy):
+        self.db = db
+
     def insert_post(self, nickname, content, ip, user_agent, timestamp=None, status='pending'):
         """新增一則投稿，預設狀態為 pending"""
         if timestamp is None:
@@ -19,7 +21,7 @@ class GuestDBA:
             user_agent=user_agent,
             status=status
         )
-        
-        db.session.add(post)
-        db.session.commit()
+
+        self.db.session.add(post)
+        self.db.session.commit()
         return post.id
