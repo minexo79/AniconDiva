@@ -123,9 +123,9 @@ def create_post():
                                     content=content,
                                     ip=ip_addr,
                                     user_agent=request.headers.get('User-Agent'),
-                                    post_time=posts.timestamp)
+                                    post_time=posts[0].timestamp)
             
-            current_app.logger.info(f"發送結果: {result.status_code} - {result.text}")
+            # current_app.logger.info(f"發送結果: {result.status_code} - {result.text}")
 
             # 改用redirect 來避免重複提交
             flash("投稿成功，您的匿名ID是：" + str(post_new_id), 'new_id')

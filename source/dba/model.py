@@ -1,6 +1,4 @@
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
-import hashlib
 
 db = SQLAlchemy()
 
@@ -9,6 +7,18 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(16), unique=True, nullable=False)
     password = db.Column(db.String(64), nullable=False)
+    superadmin = db.Column(db.Boolean, default=False, nullable=False)
+
+class Tag(db.Model):
+    __tablename__ = 'tag_dict'
+    id = db.Column(db.Integer, primary_key=True)
+    label = db.Column(db.String(16), unique=True, nullable=False)
+    pending_request = db.Column(db.Boolean, default=False, nullable=False)
+
+class Operate(db.Model):
+    __tablename__ = 'operate_dict'
+    id = db.Column(db.Integer, primary_key=True)
+    label = db.Column(db.String(16), unique=True, nullable=False)
 
 class Post(db.Model):
     __tablename__ = 'posts'

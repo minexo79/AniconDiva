@@ -17,66 +17,59 @@
             </div>
             {% endif %}
             {% endwith %}
-            <div class="row">
-                <div class="col-md-6">
-                    <h4>管理員列表</h4>
-                    <table class="table table-striped mt-2">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>帳號</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for user in users %}
-                            <tr>
-                                <td>{{ user['id'] }}</td>
-                                <td>{{ user['username'] }}</td>
-                                <td>
-                                    <!-- 只有「目前登入者 ID=1」時，才顯示刪除按鈕，而且不能刪自己、不能刪預設（id=1）。
-                                        其他管理員登入時，不會顯示任何刪除按鈕（只會看到「自己」或「預設」兩個標籤）。 -->
-                                    {% if current_user_id == 1 and user['username'] != current_user and user['id'] != 1 %}
-                                        <form method="post" action="{{ url_for('admin.delete_admin', user_id=user['id']) }}"
-                                            onsubmit="return confirm('確認要刪除此管理員？');" style="display:inline;">
-                                            <button type="submit" class="btn btn-sm btn-danger">刪除</button>
-                                        </form>
-                                    {% elif user['id'] == 1 %}
-                                        <span class="text-muted">預設</span>
-                                    {% elif user['username'] == current_user %}
-                                        <span class="text-muted">自己</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    <br>
+            <!-- 只有「目前登入者 ID=1」時，才能新增管理員。其他管理員登入時，不會顯示任何按鈕。 -->
+            {% if current_user_id == 1 %}
+            <h4>新增管理員</h4>
+            <form class="row mb-2" method="post" autocomplete="off">
+                <div class="col-md-3 mb-2">
+                    <input type="text" class="form-control" placeholder="輸入管理員帳號" id="username" name="username" required maxlength="16"/>
                 </div>
-                <div class="col-md-6">
-                    <!-- 只有「目前登入者 ID=1」時，才能新增管理員。其他管理員登入時，不會顯示任何按鈕。 -->
-                    {% if current_user_id == 1 %}
-                    <h4>新增管理員</h4>
-                    <form method="post" autocomplete="off">
-                        <div class="mb-3">
-                            <label for="username" class="form-label">管理員帳號</label>
-                            <input type="text" class="form-control" id="username" name="username" required maxlength="16"/>
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">密碼</label>
-                            <input type="password" class="form-control" id="password" name="password" required maxlength="64"/>
-                        </div>
-                        <div class="mb-3">
-                            <label for="password2" class="form-label">再次輸入密碼</label>
-                            <input type="password" class="form-control" id="password2" name="password2" required maxlength="64" />
-                        </div>
-                        <button type="submit" class="btn btn-primary">新增管理員</button>
-                    </form>
-                    {% else %}
-                    <p>權限不足!</p>
-                    {% endif %}
+                <div class="col-md-3 mb-2">
+                    <input type="password" class="form-control" placeholder="輸入密碼" id="password" name="password" required maxlength="64"/>
                 </div>
-            </div>
+                <div class="col-md-3 mb-2">
+                    <input type="password" class="form-control" placeholder="再次輸入密碼" id="password2" name="password2" required maxlength="64" />
+                </div>
+                <div class="col-md-3 mb-2">
+                    <button type="submit" class="btn btn-primary">新增</button>
+                </div>
+            </form>
+            {% else %}
+            <!-- 權限不足，不要顯示 -->
+            {% endif %}
+            <br>
+            <h4>管理員列表</h4>
+            <table class="table table-striped mt-2">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>帳號</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user['id'] }}</td>
+                        <td>{{ user['username'] }}</td>
+                        <td>
+                            <!-- 只有「目前登入者 ID=1」時，才顯示刪除按鈕，而且不能刪自己、不能刪預設（id=1）。
+                                其他管理員登入時，不會顯示任何刪除按鈕（只會看到「自己」或「預設」兩個標籤）。 -->
+                            {% if current_user_id == 1 and user['username'] != current_user and user['id'] != 1 %}
+                                <form method="post" action="{{ url_for('admin.delete_admin', user_id=user['id']) }}"
+                                    onsubmit="return confirm('確認要刪除此管理員？');" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-danger">刪除</button>
+                                </form>
+                            {% elif user['id'] == 1 %}
+                                <span class="text-muted">預設</span>
+                            {% elif user['username'] == current_user %}
+                                <span class="text-muted">自己</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
         <!-- Footer -->
         {% include 'footer.html' %}
