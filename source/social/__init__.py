@@ -28,3 +28,5 @@ def send(_social_mode: social_mode, anon_id: str, nickname: str, content: str, i
                                             nickname, 
                                             content)
             return result
+    
+    return None

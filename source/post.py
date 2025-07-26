@@ -113,7 +113,7 @@ def create_post():
 
         # 前端有擋住必填欄位，可以略過 null
         if content:
-            # 假設 insert_post 回傳新 id！
+            # 假設 insert_post 回傳新 id
             post_new_id = guest_dba.insert_post(nickname, content, ip_addr, request.headers.get('User-Agent'), None)
             # 取得剛剛那筆投稿
             posts = post_dba.get_posts_by_id(post_new_id)  # 可依需求選擇
@@ -124,9 +124,10 @@ def create_post():
                                     content=content,
                                     ip=ip_addr,
                                     user_agent=request.headers.get('User-Agent'),
-                                    post_time=posts.timestamp)
+                                    post_time=posts[0].timestamp)
             
-            current_app.logger.info(f"發送結果: {result.status_code} - {result.text}")
+            if (result is not None):
+                current_app.logger.info(f"發送結果: {result.status_code} - {result.text}")
 
             # 改用redirect 來避免重複提交
             flash("投稿成功，您的匿名ID是：" + str(post_new_id), 'new_id')
