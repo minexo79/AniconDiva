@@ -117,9 +117,11 @@ def create_post():
             tag_pending_request = post_dba.get_tag(tag_id).pending_request
 
             # 假設 insert_post 回傳新 id
-            post_new_id = guest_dba.insert_post(nickname, content, ip_addr, request.headers.get('User-Agent'), None, tag=tag_id, need_review=tag_pending_request)
+            post_new_id = guest_dba.insert_post_guest(nickname, content, ip_addr, request.headers.get('User-Agent'), None, tag=tag_id, need_review=tag_pending_request)
             # 取得剛剛那筆投稿
             posts = post_dba.get_posts_by_id(post_new_id)  # 可依需求選擇
+
+            
             # 透過 social module 發送社群貼文
             result = social.send(social.social_mode.PendingPost,
                                     anon_id=str(post_new_id),
@@ -128,9 +130,8 @@ def create_post():
                                     ip=ip_addr, # 預設 tag 為 1
                                     user_agent=request.headers.get('User-Agent'),
                                     post_time=posts[0].timestamp)
-            
-            if (result is not None):
-                current_app.logger.info(f"發送結果: {result.status_code} - {result.text}")
+
+            current_app.logger.info('AvA => New Post Id: %s, Social Send Result: %s', post_new_id, result)
 
             # 改用redirect 來避免重複提交
             flash("投稿成功，您的匿名ID是：" + str(post_new_id), 'new_id')

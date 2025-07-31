@@ -6,6 +6,7 @@ from .dba.post import PostDBA
 from .dba.model import db
 from .utils import envload
 from .utils.default_dict import DefaultDict 
+from .utils.log import log_init
 import os
 
 # 2025.6.26 Blackcat: Change to use environment variables instead of config.ini
@@ -20,22 +21,28 @@ def anicondiva_init() -> Flask:
     """
     初始化 AniconDiva 環境設定。
     """
+    log_init()  # 初始化日誌系統
+    
     # Get the parent directory (project root) for templates and static files
     app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 
     # 將環境變數寫入 app.config
     envload.load_environment_variables(app)
+    app.logger.info('AvA => Environment Variables Loaded.')
     app.secret_key = app.config['SECRET_KEY']
+    app.logger.info('AvA => Debug Mode: %s', app.config['DEBUG'])
 
-    if app.config['DEBUG'] == True:
+    if app.config['DEBUG'] == 'True':
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
         app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(project_root, 'test.db')}"
+        app.logger.info('AvA => Using SQLite for Database.')
     else:
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
         app.config['SQLALCHEMY_DATABASE_URI'] = (
             f"mysql+pymysql://{app.config['MYSQL_USER']}:{app.config['MYSQL_PASSWORD']}@"
             f"{app.config['MYSQL_URL']}:{app.config['MYSQL_PORT']}/{app.config['MYSQL_DATABASE']}"
         )
+        app.logger.info('AvA => Using MySQL for Database.')
 
     """
     初始化 AniconDiva 的資料庫。
