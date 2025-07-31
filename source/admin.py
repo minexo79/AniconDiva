@@ -1,6 +1,7 @@
 # admin.py
 from flask import current_app, Blueprint, render_template, request, redirect, url_for, session, flash, send_file
 from .utils.hash import hash_password
+from .utils.default_dict import DefaultDict
 import io
 import csv
 import math
@@ -35,6 +36,7 @@ def login():
         user = admin_dba.get_user_by_name_pw(username, pw_hash)
         if user:
             session['admin'] = username
+            current_app.logger.info('AvA => User %s logged in successfully', username)
             return redirect(url_for('admin.admin_index'))  # <-- 用 admin.admin_index
         else:
             flash('登入失敗，請檢查帳號密碼')
@@ -46,6 +48,7 @@ def login():
 @login_required
 def logout():
     """管理員登出"""
+    current_app.logger.info('AvA => User %s logged out', session.get('admin', 'Unknown'))
     session.pop('admin', None)
     return redirect(url_for('admin.login'))     # <-- 用 admin.login
 
@@ -149,6 +152,10 @@ def review_post(post_id):
         return redirect(url_for('admin.admin_pending'))
     
     admin_dba.add_post_review(post_id, admin_id, decision)
+    
+    current_app.logger.info('AvA => User %s reviewed post %d with decision %s',    current_user, 
+                                                                                    post_id, 
+                                                                                    DefaultDict.OperateDict[int(decision)].label)
 
     # 計算已審核人數
     approved_review_count = admin_dba.get_post_review_count(post_id, 2)
@@ -230,8 +237,12 @@ def admin_env():
 def delete(post_id):
     """管理員刪除投稿"""
     admin_dba = current_app.config.get('ADMIN_DBA')
+
     admin_dba.delete_post(post_id)                       # 標記為已刪除   
     admin_dba.update_post_status(post_id, 4)             # 標記為已刪除
+
+    current_app.logger.info('AvA => User %s deleted post %d', session['admin'], post_id)
+
     return redirect(url_for('admin.admin_all_posts'))    # <-- 用 admin.admin_verified   
 
 # --- 管理員用戶管理 ---
@@ -253,6 +264,9 @@ def admin_users():
         else:
             pw_hash = hash_password(password, admin_dba.hash_salt)
             admin_dba.insert_user(username, pw_hash)
+
+            current_app.logger.info('AvA => New user %s added', username)
+
             flash('成功新增管理員')
         return redirect(url_for('admin.admin_users'))   # <-- 用 admin.admin_users
     # 取得所有管理員
@@ -281,6 +295,9 @@ def delete_admin(user_id):
         flash("不能刪除自己！")
     else:
         admin_dba.delete_user_by_id(user_id)
+
+        current_app.logger.info('AvA => Deleted admin user: %s', row)
+
         flash(f"已刪除管理員: {row}", "danger")
     return redirect(url_for('admin.admin_users'))      # <-- 用 admin.admin_users
 
@@ -303,6 +320,9 @@ def admin_export():
     mem = io.BytesIO()
     mem.write(output.getvalue().encode('utf-8-sig'))  # 加 BOM for Excel
     mem.seek(0)
+
+    current_app.logger.info('AvA => Exported posts to CSV')
+
     return send_file(mem, mimetype='text/csv', as_attachment=True, download_name='posts_export.csv')
 
 # --- 匯入投稿CSV ---
@@ -335,6 +355,9 @@ def admin_import():
                 except Exception as e:
                     flash(f'匯入失敗: {e}', 'danger')
                     continue
+                
+            current_app.logger.info('AvA => Imported %d posts from CSV', imported)
+            
             flash(f'成功匯入 {imported} 筆投稿', 'success')
             return redirect(url_for('admin.admin_env'))
         except Exception as e:

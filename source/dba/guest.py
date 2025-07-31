@@ -8,7 +8,7 @@ class GuestDBA:
     def __init__(self, db: SQLAlchemy):
         self.db = db
 
-    def insert_post(self, nickname, content, ip, user_agent, timestamp=None, tag=1, need_review=False):
+    def insert_post_guest(self, nickname, content, ip, user_agent, timestamp=None, tag=1, need_review=False):
         """新增一則投稿，預設狀態為 pending"""
         if timestamp is None:
             timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
