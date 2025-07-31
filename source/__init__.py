@@ -25,10 +25,9 @@ def anicondiva_init() -> Flask:
 
     # 將環境變數寫入 app.config
     envload.load_environment_variables(app)
-
     app.secret_key = app.config['SECRET_KEY']
 
-    if app.config['DEBUG']:
+    if app.config['DEBUG'] == False:
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
         app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(project_root, 'test.db')}"
     else:
