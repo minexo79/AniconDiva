@@ -12,9 +12,10 @@
             <div class="col-auto">
                 <select name="status" id="status" class="form-select" style="width:auto;display:inline-block;">
                     <option value="all" {% if status=='all' %}selected{% endif %}>全部</option>
-                    <option value="approved" {% if status=='approved' %}selected{% endif %}>已發布</option>
-                    <option value="pending" {% if status=='pending' %}selected{% endif %}>待審核</option>
-                    <option value="rejected" {% if status=='rejected' %}selected{% endif %}>被拒絕</option>
+                    <option value="1" {% if status=='1' %}selected{% endif %}>待審核</option>
+                    <option value="2" {% if status=='2' %}selected{% endif %}>已發布</option>
+                    <option value="3" {% if status=='3' %}selected{% endif %}>被拒絕</option>
+                    <option value="4" {% if status=='4' %}selected{% endif %}>已刪除</option>
                 </select>
             </div>
             <div class="col-auto">
@@ -41,19 +42,23 @@
                     <td>{{ post.content[:35] }}{% if post.content|length > 35 %}...{% endif %}</td>
                     <td>{{ post.timestamp }}</td>
                     <td>
-                        {% if post.status == 'approved' %}
-                        已發布
-                        {% elif post.status == 'rejected' %}
-                        已拒絕
-                        {% else %}
+                        {% if post.status == 1 %}
                         待審核
+                        {% elif post.status == 2 %}
+                        已發布
+                        {% elif post.status == 3 %}
+                        已拒絕
+                        {% elif post.status == 4 %}
+                        已刪除
                         {% endif %}
                     </td>
                     <td>
                         <a class="btn btn-sm btn-secondary" href="{{ url_for('admin.view_post', post_id=post.id) }}" target="_blank">查看全文</a>
+                        {% if post.status != 4 %}
                         <form method="post" action="{{ url_for('admin.delete', post_id=post.id) }}" onsubmit="return confirm('確定刪除?');" style="display:inline;">
                             <button type="submit" class="btn btn-sm btn-danger">刪除</button>
                         </form>
+                        {% endif %} 
                     </td>
                 </tr>
                 {% endfor %}

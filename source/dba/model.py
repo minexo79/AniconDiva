@@ -25,14 +25,16 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nickname = db.Column(db.String(16), nullable=False)
     content = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.String(32), nullable=False)
     ip = db.Column(db.String(64), nullable=False)
     user_agent = db.Column(db.String(255), nullable=False)
-    status = db.Column(db.String(16), nullable=False, default='pending')
+    tag = db.Column(db.Integer, db.ForeignKey('tag_dict.id'), nullable=False, default=1)
+    status = db.Column(db.Integer, db.ForeignKey('operate_dict.id'), nullable=False, default=1)
+    timestamp = db.Column(db.String(32), nullable=False)
 
 class PostReview(db.Model):
     __tablename__ = 'post_reviews'
     id = db.Column(db.Integer, primary_key=True)
-    post_id = db.Column(db.Integer, nullable=False)
-    admin_id = db.Column(db.Integer, nullable=False)
-    decision = db.Column(db.String(16), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
+    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    decision = db.Column(db.Integer, db.ForeignKey('operate_dict.id'),nullable=False, default=1)
+    timestamp = db.Column(db.String(32), nullable=False)

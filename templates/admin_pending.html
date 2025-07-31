@@ -39,11 +39,11 @@
                     <td>{{ post.timestamp }}</td>
                     <td>
                         <form method="post" action="{{ url_for('admin.review_post', post_id=post.id) }}" style="display:inline;">
-                            <input type="hidden" name="decision" value="approve">
+                            <input type="hidden" name="decision" value="2">
                             <button type="submit" class="btn btn-sm btn-success">通過</button>
                         </form>
                         <form method="post" action="{{ url_for('admin.review_post', post_id=post.id) }}" style="display:inline;">
-                            <input type="hidden" name="decision" value="reject">
+                            <input type="hidden" name="decision" value="3">
                             <button type="submit" class="btn btn-sm btn-dark">拒絕</button>
                         </form>
                         <a class="btn btn-sm btn-secondary" href="{{ url_for('admin.view_post', post_id=post.id) }}" target="_blank">查看全文</a>

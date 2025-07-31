@@ -25,7 +25,7 @@ class AdminDBA:
 
     def get_all_users(self):
         """取得所有用戶（管理員）清單"""
-        return self.db.session.query(User).with_entities(User.id, User.username).all()
+        return self.db.session.query(User).with_entities(User.id, User.username).order_by(User.id.desc()).all()
 
     def delete_user_by_id(self, user_id):
         """刪除用戶（管理員）"""
@@ -45,7 +45,9 @@ class AdminDBA:
 
     def add_post_review(self, post_id, admin_id, decision):
         """新增一筆投稿審核紀錄（同一管理員不可重複審核同一篇）"""
-        review = PostReview(post_id=post_id, admin_id=admin_id, decision=decision)
+        timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+
+        review = PostReview(post_id=post_id, admin_id=admin_id, decision=decision, timestamp=timestamp)
         self.db.session.add(review)
         self.db.session.commit()
 
@@ -54,15 +56,15 @@ class AdminDBA:
         return self.db.session.query(PostReview).filter_by(post_id=post_id, decision=decision).count()
 
     def update_post_status(self, post_id, status):
-        """更新投稿狀態（pending/approved/rejected）"""
+        """更新投稿狀態（pending/approved/rejected/deleted）"""
         post = self.db.session.query(Post).get(post_id)
         if post:
-            post.status = status
+            post.status = int(status)
             self.db.session.commit()
 
     def delete_post(self, post_id):
         """刪除投稿"""
         post = Post.query.get(post_id)
         if post:
-            self.db.session.delete(post)
+            post.status = 4  # 標記為已刪除
             self.db.session.commit()

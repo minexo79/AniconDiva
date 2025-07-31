@@ -55,16 +55,19 @@ def admin_index():
     """管理後台首頁"""
     post_dba = current_app.config.get('POST_DBA')
     admin_name = session.get('admin', '未知管理員')
-    # 已審核通過投稿數量
-    verified_count = post_dba.get_posts_count('approved')
     # 待審核投稿數量
-    pending_count = post_dba.get_posts_count('pending')
+    pending_count = post_dba.get_posts_count(1)
+    # 已審核通過投稿數量
+    verified_count = post_dba.get_posts_count(2)
     # 已拒絕投稿數量
-    rejected_count = post_dba.get_posts_count('rejected')
+    rejected_count = post_dba.get_posts_count(3)
+    # 已刪除投稿數量
+    deleted_count = post_dba.get_posts_count(4)
     return render_template('admin_index.html',  admin_name=admin_name, 
                                                 posted_count=pending_count, 
                                                 verified_count=verified_count,
-                                                rejected_count=rejected_count)
+                                                rejected_count=rejected_count,
+                                                deleted_count=deleted_count)
 
 # --- 查看投稿內容 ---
 @admin_bp.route('/view_post/<int:post_id>')
@@ -98,13 +101,13 @@ def admin_pending():
     page = int(request.args.get('page', 1))
     per_page = 20
     # 直接呼叫 dba 封裝的分頁查詢
-    posts = post_dba.get_posts_with_pagination(page, per_page, status='pending')
+    posts = post_dba.get_posts_with_pagination(page, per_page, status=1)
     # 計算總數量
-    total_count = post_dba.get_posts_count('pending')
+    total_count = post_dba.get_posts_count(1)
 
     # 計算每篇投稿的審核人數
-    approved_review_counts = {post.id: admin_dba.get_post_review_count(post.id, 'approve') for post in posts}
-    rejected_review_counts = {post.id: admin_dba.get_post_review_count(post.id, 'reject') for post in posts}
+    approved_review_counts = {post.id: admin_dba.get_post_review_count(post.id, 2) for post in posts}
+    rejected_review_counts = {post.id: admin_dba.get_post_review_count(post.id, 3) for post in posts}
 
     # 計算總管理員數量與審核門檻
     total_admin = admin_dba.get_total_admin_count()
@@ -141,32 +144,32 @@ def review_post(post_id):
         flash('找不到管理員資訊', 'danger')
         return redirect(url_for('admin.admin_pending'))
     # 若投稿已非 pending，禁止重複審核
-    if post_dba.get_post_status(post_id) != 'pending':
+    if post_dba.get_post_status(post_id) != 1:
         flash('此投稿已完成審核，無法重複操作', 'warning')
         return redirect(url_for('admin.admin_pending'))
     
     admin_dba.add_post_review(post_id, admin_id, decision)
 
     # 計算已審核人數
-    approved_review_count = admin_dba.get_post_review_count(post_id, 'approve')
-    rejected_review_count = admin_dba.get_post_review_count(post_id, 'reject')
+    approved_review_count = admin_dba.get_post_review_count(post_id, 2)
+    rejected_review_count = admin_dba.get_post_review_count(post_id, 3)
 
     total_admin = admin_dba.get_total_admin_count()
     threshold = max(1, total_admin // 2)
 
     # 達到人數門檻才通過
-    if decision == 'approve':
+    if decision == '2':
         if approved_review_count < threshold:    
             flash(f'已審核，尚需 {threshold - approved_review_count} 人審核', 'info')
         else:
-            admin_dba.update_post_status(post_id, 'approved')
+            admin_dba.update_post_status(post_id, 2)
             flash('投稿已通過審核', 'success')
     # 達到人數門檻才拒絕
-    elif decision == 'reject':         
+    elif decision == '3':         
         if rejected_review_count < threshold:
             flash(f'已審核，尚需 {threshold - rejected_review_count} 人審核', 'info')
         else:
-            admin_dba.update_post_status(post_id, 'rejected')
+            admin_dba.update_post_status(post_id, 3)
             flash('投稿已被拒絕', 'danger')
 
     return redirect(url_for('admin.admin_pending'))
@@ -227,7 +230,8 @@ def admin_env():
 def delete(post_id):
     """管理員刪除投稿"""
     admin_dba = current_app.config.get('ADMIN_DBA')
-    admin_dba.delete_post(post_id)
+    admin_dba.delete_post(post_id)                       # 標記為已刪除   
+    admin_dba.update_post_status(post_id, 4)             # 標記為已刪除
     return redirect(url_for('admin.admin_all_posts'))    # <-- 用 admin.admin_verified   
 
 # --- 管理員用戶管理 ---
@@ -255,8 +259,11 @@ def admin_users():
     users = admin_dba.get_all_users()
     current_user = session['admin']
     row = admin_dba.get_user_by_name(current_user)
-    current_user_id = row.id if row else None
-    return render_template('admin_users.html', users=users, current_user=current_user, current_user_id=current_user_id)
+    is_superadmin = row.superadmin if row else None
+
+    return render_template('admin_users.html',  users=users, 
+                                                current_user=current_user, 
+                                                is_superadmin=is_superadmin)
 
 # --- 刪除管理員 ---
 @admin_bp.route('/delete_admin/<int:user_id>', methods=['POST'])
@@ -286,11 +293,11 @@ def admin_export():
     rows = post_dba.get_all_posts()
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(['ID', 'Nickname' ,'Content', 'Timestamp', 'IP', 'User-Agent', 'Status'])
+    writer.writerow(["ID", "Nickname", "Content", "IP", "User-Agent", "Tag", "Status", "Timestamp"])
 
     # 遍歷所有投稿資料，寫入CSV
     for row in rows:
-        writer.writerow([row.id, row.nickname, row.content, row.timestamp, row.ip, row.user_agent, row.status])
+        writer.writerow([row.id, row.nickname, row.content, row.ip, row.user_agent, row.tag, row.status, row.timestamp ])
 
     output.seek(0)
     mem = io.BytesIO()
@@ -313,7 +320,7 @@ def admin_import():
             stream = io.StringIO(file.stream.read().decode('utf-8-sig'))
             reader = csv.reader(stream)
             header = next(reader, None)
-            expected_header = ['ID', 'Nickname', 'Content', 'Timestamp', 'IP', 'User-Agent', 'Status']
+            expected_header = ["ID", "Nickname", "Content", "IP", "User-Agent", "Tag", "Status", "Timestamp"]
             if header != expected_header:
                 flash('CSV欄位格式錯誤，請使用正確的匯出格式', 'danger')
                 return redirect(url_for('admin.admin_env'))
@@ -322,10 +329,8 @@ def admin_import():
                 if not any(row):
                     continue
                 try:
-                    _, nickname, content, timestamp, ip, user_agent, status = row
-                    if status not in ['pending', 'approved', 'rejected']:
-                        status = 'pending'
-                    guest_dba.insert_post(nickname, content, ip, user_agent, timestamp, status)
+                    _, nickname, content, ip, user_agent, tag, status, timestamp = row
+                    guest_dba.insert_post(nickname, content, ip, user_agent, timestamp, tag, status)
                     imported += 1
                 except Exception as e:
                     flash(f'匯入失敗: {e}', 'danger')

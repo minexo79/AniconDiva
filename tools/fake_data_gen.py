@@ -20,17 +20,18 @@ def generate_row(idx):
         idx,
         _name,
         random_content(),
-        (datetime.now() - timedelta(minutes=random.randint(0, NUM_ROWS))).isoformat(sep=' ', timespec='seconds'),
         fake.ipv4(),
-        fake.user_agent(),
-        random.choice(["pending", "approved", "rejected"])
+        fake.chrome(),
+        1,  # Default tag
+        random.choice([1, 2, 3, 4]),
+        (datetime.now() - timedelta(minutes=random.randint(0, int(NUM_ROWS)))).isoformat(sep=' ', timespec='seconds')
     ]
 
 # Output file name
 filename = "sample_data.csv"
 
 # Header
-header = ["ID", "Nickname", "Content", "Timestamp", "IP", "User-Agent", "status"]
+header = ["ID", "Nickname", "Content", "IP", "User-Agent", "Tag", "status", "Timestamp"]
 
 with open(filename, mode='w', encoding='utf-8', newline='') as file:
     writer = csv.writer(file)

@@ -29,7 +29,7 @@ def view_post():
             posts = [
                 {'id': row.id, 'content': row.content, 'timestamp': row.timestamp, 'ip': row.ip, 'user_agent': row.user_agent}
                 for row in rows
-                if post_dba.get_post_status(row.id) == 'approved'
+                if post_dba.get_post_status(row.id) == 2
             ]
             total_count = len(posts)
             total_pages = math.ceil(total_count / per_page)
@@ -49,7 +49,7 @@ def view_post():
             posts = posts[start:end]
         else:
             # 關鍵字搜尋（分頁，僅顯示已審核通過）
-            rows = post_dba.get_posts_by_keyword_with_pagination(query, page, per_page, 'approved')
+            rows = post_dba.get_posts_by_keyword_with_pagination(query, page, per_page, 2)
             total_count = rows.__len__()
             posts = [
                 {'id': row.id, 'content': row.content, 'timestamp': row.timestamp, 'ip': row.ip, 'user_agent': row.user_agent}
@@ -68,8 +68,8 @@ def view_post():
             }
     else:
         # 顯示所有投稿（分頁，僅顯示已審核通過）
-        rows = post_dba.get_posts_with_pagination(page, per_page, 'approved')
-        total_count = post_dba.get_posts_count('approved')
+        rows = post_dba.get_posts_with_pagination(page, per_page, 2)
+        total_count = post_dba.get_posts_count(2)
         posts = [
             {'id': row.id, 'content': row.content, 'timestamp': row.timestamp, 'ip': row.ip, 'user_agent': row.user_agent}
             for row in rows
@@ -112,8 +112,12 @@ def create_post():
 
         # 前端有擋住必填欄位，可以略過 null
         if content:
+            # 取得該Tag與該Tag是否需要審核
+            tag_id = int(request.form.get('tag', 1))
+            tag_pending_request = post_dba.get_tag(tag_id).pending_request
+
             # 假設 insert_post 回傳新 id
-            post_new_id = guest_dba.insert_post(nickname, content, ip_addr, request.headers.get('User-Agent'), None)
+            post_new_id = guest_dba.insert_post(nickname, content, ip_addr, request.headers.get('User-Agent'), None, tag=tag_id, need_review=tag_pending_request)
             # 取得剛剛那筆投稿
             posts = post_dba.get_posts_by_id(post_new_id)  # 可依需求選擇
             # 透過 social module 發送社群貼文
@@ -121,7 +125,7 @@ def create_post():
                                     anon_id=str(post_new_id),
                                     nickname=nickname,
                                     content=content,
-                                    ip=ip_addr,
+                                    ip=ip_addr, # 預設 tag 為 1
                                     user_agent=request.headers.get('User-Agent'),
                                     post_time=posts[0].timestamp)
             

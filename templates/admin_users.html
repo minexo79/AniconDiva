@@ -17,8 +17,8 @@
             </div>
             {% endif %}
             {% endwith %}
-            <!-- 只有「目前登入者 ID=1」時，才能新增管理員。其他管理員登入時，不會顯示任何按鈕。 -->
-            {% if current_user_id == 1 %}
+            <!-- 只有「目前登入者為Superadmin」時，才能新增管理員。其他管理員登入時，不會顯示任何按鈕。 -->
+            {% if is_superadmin == true %}
             <h4>新增管理員</h4>
             <form class="row mb-2" method="post" autocomplete="off">
                 <div class="col-md-3 mb-2">
@@ -55,7 +55,7 @@
                         <td>
                             <!-- 只有「目前登入者 ID=1」時，才顯示刪除按鈕，而且不能刪自己、不能刪預設（id=1）。
                                 其他管理員登入時，不會顯示任何刪除按鈕（只會看到「自己」或「預設」兩個標籤）。 -->
-                            {% if current_user_id == 1 and user['username'] != current_user and user['id'] != 1 %}
+                            {% if is_superadmin == true and user['username'] != current_user %}
                                 <form method="post" action="{{ url_for('admin.delete_admin', user_id=user['id']) }}"
                                     onsubmit="return confirm('確認要刪除此管理員？');" style="display:inline;">
                                     <button type="submit" class="btn btn-sm btn-danger">刪除</button>
