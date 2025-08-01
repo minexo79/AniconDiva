@@ -1,5 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 
+# 2025.7.31 Blackcat: Change Post Status To Int (With Operate ID)
+
 db = SQLAlchemy()
 
 class User(db.Model):

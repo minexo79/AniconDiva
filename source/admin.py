@@ -11,6 +11,8 @@ import math
 # 2025.6.29 Blackcat: Implement Verified Features
 # 2025.7.23 Blackcat: Remove ConfigParser, use envload instead, Change dbaccess to SqlAlchemy
 # 2025.7.25 Blackcar: Export CSV Changed to For Loop & Fix Pending Number Not Showing Issue
+# 2025.7.31 Blackcat: Change Post Status To Int (With Operate ID)
+# 2025.8.1 Blackcat: Add Admin User Management Features (Change Password), Add Logging (Using AvA For Header)
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -300,6 +302,34 @@ def delete_admin(user_id):
 
         flash(f"已刪除管理員: {row}", "danger")
     return redirect(url_for('admin.admin_users'))      # <-- 用 admin.admin_users
+
+# --- 更改密碼 --- 
+@admin_bp.route('/change_password/<int:user_id>', methods=['POST'])
+@login_required
+def change_password(user_id):
+    """管理員更改密碼"""
+    admin_dba = current_app.config.get('ADMIN_DBA')
+
+    password = request.form.get('password', '').strip()
+    password2 = request.form.get('password2', '').strip()
+
+    if not password or not password2:
+        flash('密碼欄位不可為空', 'warning')
+        return redirect(url_for('admin.admin_users'))  # <-- 用 admin.admin_users
+    
+    if password != password2:
+        flash('兩次密碼輸入不一致', 'warning')
+        return redirect(url_for('admin.admin_users'))
+    
+    pw_hash = hash_password(password, admin_dba.hash_salt)
+    admin_dba.change_password(user_id, pw_hash)
+    current_app.logger.info('AvA => Change password for user id %s', user_id)
+
+    flash(f"已更改管理員密碼，請重新登入", "success")
+    return redirect(url_for('admin.admin_users'))      # <-- 用 admin.admin_users
+
+
+
 
 # --- 匯出投稿CSV ---
 @admin_bp.route('/admin_export')

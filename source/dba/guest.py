@@ -4,6 +4,8 @@ from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from .model import Post
 
+# 2025.7.31 Blackcat: Change Post Status To Int (With Operate ID)
+
 class GuestDBA:
     def __init__(self, db: SQLAlchemy):
         self.db = db

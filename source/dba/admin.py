@@ -4,6 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from .model import Post, PostReview, User
 
+# 2025.7.31 Blackcat: Change Post Status To Int (With Operate ID)
+
 class AdminDBA:
     def __init__(self, hash_salt, db: SQLAlchemy):
         self.hash_salt = hash_salt
@@ -22,6 +24,13 @@ class AdminDBA:
         user = User(username=username, password=pw_hash)
         self.db.session.add(user)
         self.db.session.commit()
+
+    def change_password(self, user_id, new_password):
+        """更改用戶（管理員）密碼"""
+        user = self.db.session.query(User).get(user_id)
+        if user:
+            user.password = new_password
+            self.db.session.commit()
 
     def get_all_users(self):
         """取得所有用戶（管理員）清單"""

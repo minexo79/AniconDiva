@@ -1,4 +1,3 @@
-
 # init.py
 # 管理員初始化資料表與預設帳號
 from flask_sqlalchemy import SQLAlchemy
@@ -6,6 +5,8 @@ from datetime import datetime
 from .model import User, Post, PostReview, db, Tag, Operate
 from ..utils.default_dict import DefaultDict
 from ..utils.hash import hash_password
+
+# 2025.7.31 Blackcat: Change Post Status To Int (With Operate ID)
 
 class InitDB:
     def __init__(self, db: SQLAlchemy, admin_pswd: str, hash_salt: str, default_dict: DefaultDict):

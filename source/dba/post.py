@@ -4,6 +4,8 @@ from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from .model import Post, Tag
 
+# 2025.7.31 Blackcat: Change Post Status To Int (With Operate ID)
+
 class PostDBA:
     def get_posts_by_id(self, post_id):
         """根據ID查詢單則投稿（回傳list of rows）"""

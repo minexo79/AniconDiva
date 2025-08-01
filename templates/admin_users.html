@@ -44,6 +44,7 @@
                     <tr>
                         <th>ID</th>
                         <th>帳號</th>
+                        <th>更改密碼</th>
                         <th>操作</th>
                     </tr>
                 </thead>
@@ -53,6 +54,17 @@
                         <td>{{ user['id'] }}</td>
                         <td>{{ user['username'] }}</td>
                         <td>
+                            {% if is_superadmin == true or user['username'] == current_user %}
+                            <form method="post" action="{{ url_for('admin.change_password', user_id=user['id']) }}">
+                                <input type="password" class="form-control form-control-sm d-inline-block w-25" id="password" name="password" placeholder="新密碼" required maxlength="64">
+                                <input type="password" class="form-control form-control-sm d-inline-block w-25" id="password2" name="password2" placeholder="再次輸入新密碼" required maxlength="64">
+                                <button type="submit" class="btn btn-sm btn-primary">更改</button>
+                            </form>
+                            {% else %}
+                             <!-- 空的 -->
+                            {% endif %} 
+                        </td>
+                        <td>
                             <!-- 只有「目前登入者 ID=1」時，才顯示刪除按鈕，而且不能刪自己、不能刪預設（id=1）。
                                 其他管理員登入時，不會顯示任何刪除按鈕（只會看到「自己」或「預設」兩個標籤）。 -->
                             {% if is_superadmin == true and user['username'] != current_user %}
@@ -60,8 +72,6 @@
                                     onsubmit="return confirm('確認要刪除此管理員？');" style="display:inline;">
                                     <button type="submit" class="btn btn-sm btn-danger">刪除</button>
                                 </form>
-                            {% elif user['id'] == 1 %}
-                                <span class="text-muted">預設</span>
                             {% elif user['username'] == current_user %}
                                 <span class="text-muted">自己</span>
                             {% endif %}

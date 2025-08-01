@@ -9,6 +9,8 @@ import math
 # 2025.7.23 Blackcat: Change id & q request.args.get to content & Change dbaccess to SqlAlchemy
 # 2025.7.25 Blackcat: Get Only One Post by ID in create_post To Improve Performance
 # 2025.7.26 Blackcat: Using Social Mode Instead webhook
+# 2025.7.31 Blackcat: Change Post Status To Int (With Operate ID)
+# 2025.8.1 Blackcat: Add Logging (Using AvA For Header)
 
 post_bp = Blueprint('post', __name__)
 

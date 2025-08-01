@@ -12,8 +12,8 @@
     - 使用 Discord Webhook 同步發布內容
 - 管理員功能
     - 可管理、刪除投稿內容
-    - 新增其他管理員
-    - 匯入 / 匯出投稿檔案
+    - 使用者管理
+    - 匯入 / 匯出投稿紀錄
 
 ## Prequires
 - Python 3.12.X
@@ -46,53 +46,59 @@ pip install -r requirement.txt
 ```
 python main.py
 ```
-or
-```
-gunicorn main:app (Only Works On Linux)
-```
+
 3. 在瀏覽器輸入`http://127.0.0.1:5000/`瀏覽網頁。
 
 # 專案架構
 ```
 root/
-├── main.py                     # 主入口
-├── templates/
-│   ├── index.html              # 平台首頁
-│   ├── header.html             # 共用頁首
-│   ├── footer.html             # 共用頁尾
-│   ├── login.html              # 登入
-│   ├── rules.html              # (公開頁面) 發文規則
-│   ├── view_post.html          # (公開頁面) 檢視已發布投稿
-│   ├── create_post.html        # (公開頁面) 創建投稿
-│   ├── navbar.html             # (公開頁面) 共用導航欄
-│   ├── admin_navbar.html       # (管理員) 共用導航欄
-│   ├── admin_all_posts.html    # (管理員) 全部投稿
-│   ├── admin_pending.html      # (管理員) 待審核投稿
-│   ├── admin_env.html          # (管理員) 系統一覽
-│   ├── admin_users.html        # (管理員) 使用者管理
-│   ├── admin_view_post.html    # (管理員) 檢視全文
-│   └── admin_index.html        # (管理員) 主頁面
-├── tools/
-│   ├── fake_data_gen.py        # 假資料產生器
-├── static/
-│   ├── theme.css               # 網站配色
-│   └── favicon.ico             # 網站icon
-├── sources/
-│   ├── __init__.py             
-│   ├── dba
-│   │   ├── __init__.py
-│   │   ├── admin.py            # Database Admin 操作模組
-│   │   ├── guest.py            # Database Guest 操作模組
-│   │   ├── init.py             # Database 初始化模組
-│   │   ├── model.py            # Database 模型
-│   │   └── post.py             # Database Post 操作模組
-│   ├── utils
-│   │   └── envload.py          # 環境變數載入
-│   ├── admin.py                # Web Admin 頁面功能模組
-│   ├── post.py                 # Web 公開頁面功能模組
-│   └── webhook.py              # Discord Webhook 模組
-├── README.md                   # 此專案介紹，部署教學，專案架構...等
-└── requirements.txt            # Pip 必要模組
+    ├── README.md                   # 此專案介紹，部署教學，專案架構...等
+    ├── LICENCE
+    ├── main.py                     # 主入口
+    ├── requirements.txt            # Pip 必要模組
+    ├── vercel.json                 # Vercel 環境
+    ├── source/
+    │   ├── __init__.py
+    │   ├── admin.py
+    │   ├── post.py
+    │   ├── dba/
+    │   │   ├── __init__.py
+    │   │   ├── admin.py            # Database Admin 操作模組
+    │   │   ├── guest.py            # Database Guest 操作模組
+    │   │   ├── init.py             # Database 初始化模組
+    │   │   ├── model.py            # Database 模型
+    │   │   └── post.py             # Database Post 操作模組
+    │   ├── social/
+    │   │   ├── __init__.py
+    │   │   ├── discord_webhook.py  # Discord Webhook 通知模組
+    │   │   └── facebook_post.py    # FB Post 模組
+    │   └── utils/
+    │       ├── default_dict.py     # 預設參數對應
+    │       ├── envload.py          # 環境變數載入
+    │       ├── hash.py             # SHA-256雜湊
+    │       └── log.py              # Log 設定
+    ├── static/
+    │   ├── callout.css             # Callout 樣式
+    │   ├── theme.css               # 網站配色
+    │   └── favicon.ico             # 網站icon
+    ├── templates/
+    │   ├── index.html              # 平台首頁
+    │   ├── header.html             # 共用頁首
+    │   ├── footer.html             # 共用頁尾
+    │   ├── login.html              # 登入
+    │   ├── rules.html              # (公開頁面) 發文規則
+    │   ├── view_post.html          # (公開頁面) 檢視已發布投稿
+    │   ├── create_post.html        # (公開頁面) 創建投稿
+    │   ├── navbar.html             # (公開頁面) 共用導航欄
+    │   ├── admin_navbar.html       # (管理員) 共用導航欄
+    │   ├── admin_all_posts.html    # (管理員) 全部投稿
+    │   ├── admin_pending.html      # (管理員) 待審核投稿
+    │   ├── admin_env.html          # (管理員) 系統一覽
+    │   ├── admin_users.html        # (管理員) 使用者管理
+    │   ├── admin_view_post.html    # (管理員) 檢視全文
+    │   └── admin_index.html        # (管理員) 主頁面
+    └── tools/
+    └── fake_data_gen.py            # 假資料產生器
 ```
 
 # 授權
