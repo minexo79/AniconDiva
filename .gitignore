@@ -1,6 +1,16 @@
-__pycache__/
+# .gitignore for AniconDiva project
 *.db
-config.ini
 *.bak
 .env
 *.csv
+
+# IDEs
+.vscode/
+
+# Python
+__pycache__/
+
+# pytest
+htmlcov/
+.pytest_cache/
+.coverage

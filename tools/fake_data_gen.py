@@ -8,9 +8,9 @@ NUM_ROWS = 500 # Number of rows to generate
 fake = faker.Faker()
 
 def random_content():
-    return fake.sentence(nb_words=random.randint(15, 30))
+    return fake.sentence(nb_words=random.randint(15, 100))
 
-def generate_row(idx):
+def generate_row(idx) -> list:
     # get fake name count
     _name = fake.user_name()
     if len(_name) > 16:
@@ -27,17 +27,20 @@ def generate_row(idx):
         (datetime.now() - timedelta(minutes=random.randint(0, int(NUM_ROWS)))).isoformat(sep=' ', timespec='seconds')
     ]
 
-# Output file name
-filename = "sample_data.csv"
 
-# Header
-header = ["ID", "Nickname", "Content", "IP", "User-Agent", "Tag", "status", "Timestamp"]
+def generate_csv():
+    """Generate a CSV file with fake data."""
+    # Output file name
+    filename = "sample_data.csv"
 
-with open(filename, mode='w', encoding='utf-8', newline='') as file:
-    writer = csv.writer(file)
-    writer.writerow(header)
+    # Header
+    header = ["ID", "Nickname", "Content", "IP", "User-Agent", "Tag", "status", "Timestamp"]
 
-    for i in range(1, NUM_ROWS+1):
-        writer.writerow(generate_row(i))
+    with open(filename, mode='w', encoding='utf-8', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(header)
 
-print(f"CSV file '{filename}' created with {NUM_ROWS} rows.")
+        for i in range(1, NUM_ROWS+1):
+            writer.writerow(generate_row(i))
+
+    print(f"CSV file '{filename}' created with {NUM_ROWS} rows.")

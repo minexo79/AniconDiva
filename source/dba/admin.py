@@ -1,7 +1,7 @@
 # admin.py
 # 只處理 admin（管理員）相關的資料庫操作
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timezone
 from .model import Post, PostReview, User
 
 # 2025.7.31 Blackcat: Change Post Status To Int (With Operate ID)
@@ -54,7 +54,7 @@ class AdminDBA:
 
     def add_post_review(self, post_id, admin_id, decision):
         """新增一筆投稿審核紀錄（同一管理員不可重複審核同一篇）"""
-        timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        timestamp = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
 
         review = PostReview(post_id=post_id, admin_id=admin_id, decision=decision, timestamp=timestamp)
         self.db.session.add(review)

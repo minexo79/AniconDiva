@@ -1,6 +1,6 @@
 from logging.config import dictConfig
 
-def log_init():
+def log_init(debug = False):
     dictConfig({
         'version': 1,
         'formatters': {
@@ -9,13 +9,14 @@ def log_init():
             },
         },  
         'handlers': {
-            'console': {
+            'wsgi': {
                 'class': 'logging.StreamHandler',
+                'stream': 'ext://flask.logging.wsgi_errors_stream',
                 'formatter': 'default',
             },
         },
         'root': {
-            'handlers': ['console'],
-            'level': 'INFO',
+            'handlers': ['wsgi'],
+            'level': 'INFO' if debug else 'WARNING',
         },
     })

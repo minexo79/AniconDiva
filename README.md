@@ -21,7 +21,7 @@
 
 ## Deploy
 - 至Terminal下輸入以下指令安裝套件包。
-```
+```sh
 pip install -r requirement.txt
 ```
 
@@ -43,11 +43,17 @@ pip install -r requirement.txt
 |MYSQL_DATABASE|MySQL 資料庫|
 
 2. 輸入以下指令運行。
-```
-python main.py
+```sh
+python ./main.py
 ```
 
 3. 在瀏覽器輸入`http://127.0.0.1:5000/`瀏覽網頁。
+
+# Test
+- 輸入以下指令即可進行單元測試
+```sh
+pytest --cov=./ --cov-report=html
+```
 
 # 專案架構
 ```
@@ -97,8 +103,11 @@ root/
     │   ├── admin_users.html        # (管理員) 使用者管理
     │   ├── admin_view_post.html    # (管理員) 檢視全文
     │   └── admin_index.html        # (管理員) 主頁面
-    └── tools/
-    └── fake_data_gen.py            # 假資料產生器
+    ├── tools/
+    │   └── fake_data_gen.py        # 假資料產生器
+    └── test/
+        ├── __init__.py             
+        └── test_post.py            # 發文 & 投稿測試
 ```
 
 # 授權
