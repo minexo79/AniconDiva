@@ -1,9 +1,16 @@
+/* 背景圖片與遮罩效果 */
+body {
+    background: linear-gradient(to bottom, rgba(128, 128, 128, 0.5) 0%, #FBFBFB 10%),
+                url('/static/bg.jpg') no-repeat top center;
+    background-size: cover;
+    background-attachment: fixed;
+}
 /* theme.css - 自訂配色 */
 
 :root {
     --light-grey: #FBFBFB;
     --blue-grey: #95BAC1;
-    --gold-orange: #F1A644;
+    --gold-orange: #f1a644;
     --brown-orange: #CC8050;
     --deep-blue: #25586C;
 }
@@ -134,5 +141,7 @@
     border-color: var(--blue-grey);
     box-shadow: 0 0 0 0.2rem rgba(37, 88, 108, 0.2);
 }
+
+
 
 /* 可擴充: Loader, Badge, Nav...等 */

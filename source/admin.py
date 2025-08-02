@@ -360,7 +360,7 @@ def admin_export():
 @login_required
 def admin_import():
     """管理員匯入投稿(csv)"""
-    guest_dba = current_app.config.get('GUEST_DBA')
+    post_dba = current_app.config.get('POST_DBA')
     if request.method == 'POST':
         file = request.files.get('file')
         if not file or file.filename == '':
@@ -380,7 +380,7 @@ def admin_import():
                     continue
                 try:
                     _, nickname, content, ip, user_agent, tag, status, timestamp = row
-                    guest_dba.insert_post(nickname, content, ip, user_agent, timestamp, tag, status)
+                    post_dba.insert_post(nickname, content, ip, user_agent, timestamp, tag, status)
                     imported += 1
                 except Exception as e:
                     flash(f'匯入失敗: {e}', 'danger')

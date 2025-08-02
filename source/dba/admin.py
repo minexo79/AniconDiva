@@ -7,7 +7,7 @@ from .model import Post, PostReview, User
 # 2025.7.31 Blackcat: Change Post Status To Int (With Operate ID)
 
 class AdminDBA:
-    def __init__(self, hash_salt, db: SQLAlchemy):
+    def __init__(self, db: SQLAlchemy, hash_salt):
         self.hash_salt = hash_salt
         self.db = db
 

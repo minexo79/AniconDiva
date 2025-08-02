@@ -7,6 +7,9 @@ from .model import Post, Tag
 # 2025.7.31 Blackcat: Change Post Status To Int (With Operate ID)
 
 class PostDBA:
+    def __init__(self, db: SQLAlchemy):
+        self.db = db
+
     def get_posts_by_id(self, post_id):
         """根據ID查詢單則投稿（回傳list of rows）"""
         return Post.query.filter_by(id=post_id).all()
@@ -45,7 +48,24 @@ class PostDBA:
         else:
             return Post.query.filter_by(status=int(status)).count()
         
-    # 取得該Tag
     def get_tag(self, tag_id):
+        """根據Tag ID取得Tag物件"""
         tag = Tag.query.filter_by(id=tag_id).first()
         return tag if tag else None
+    
+    def insert_post(self, nickname, content, ip, user_agent, timestamp=None, tag=1, status=1):
+        """新增一則投稿 (匯入模式)"""
+
+        post = Post(
+            nickname=nickname,
+            content=content,
+            ip=ip,
+            user_agent=user_agent,
+            tag=tag,
+            status=status,
+            timestamp=timestamp
+        )
+
+        self.db.session.add(post)
+        self.db.session.commit()
+        return post.id

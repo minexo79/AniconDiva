@@ -4,6 +4,7 @@
   border: 1px solid #eee;
   border-left-width: 5px;
   border-radius: 3px;
+  box-shadow: 0 4px 16px 0 rgba(37, 88, 108, 0.10), 0 1.5px 4px 0 rgba(0,0,0,0.06);
   h4 {
     margin-top: 0;
     margin-bottom: 5px;
@@ -31,6 +32,13 @@
 }
 .callout-primary h4 {
   color: #428bca;
+}
+
+.callout-secondary {
+  border-left-color: #d1b16b;
+}
+.callout-secondary h4 {
+  color: #d1b16b;
 }
 
 .callout-success {

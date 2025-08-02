@@ -50,9 +50,9 @@ def anicondiva_init() -> Flask:
     初始化 AniconDiva 的資料庫。
     這個函數會在應用啟動時被調用，進行必要的資料庫初始化工作。
     """
-    post_dba    = PostDBA()
-    guest_dba   = GuestDBA(db)
-    admin_dba   = AdminDBA(hash_salt=app.config['HASH_SALT'], db=db)
+    post_dba    = PostDBA(db=db)
+    guest_dba   = GuestDBA(db=db)
+    admin_dba   = AdminDBA(db=db, hash_salt=app.config['HASH_SALT'])
     admin_init  = InitDB(db=db, admin_pswd=app.config['ADMIN_PSWD'], hash_salt=app.config['HASH_SALT'], default_dict=DefaultDict())
 
     app.config['GUEST_DBA'] = guest_dba

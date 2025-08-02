@@ -14,5 +14,5 @@ class DefaultDict:
     }
 
     TagDict = {
-        1: BaseDict('無', True),
+        1: BaseDict('無', True)
     }

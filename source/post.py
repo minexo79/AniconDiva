@@ -14,70 +14,27 @@ import math
 
 post_bp = Blueprint('post', __name__)
 
+@post_bp.route('/', methods=['GET'])
+def index():
+    return render_template('index.html')
+
+@post_bp.route('/rules', methods=['GET'])
+def rules():
+    # 顯示規則頁面
+    return render_template('rules.html')
+
 @post_bp.route('/view_post', methods=['GET', 'POST'])
 def view_post():
     post_dba = current_app.config.get('POST_DBA')
     page = int(request.args.get('page', 1))
-    per_page = 10  # 統一每頁顯示10筆
-    posts = []
-    pagination = None
-
+    per_page = 10
     query = request.args.get('query', '').strip()
-    # GET 查詢流程
-    if query:
-        if query.isdigit():
-            # 查詢特定ID的投稿（僅顯示已審核通過）
-            rows = post_dba.get_posts_by_id(query)
-            posts = [
-                {'id': row.id, 'content': row.content, 'timestamp': row.timestamp, 'ip': row.ip, 'user_agent': row.user_agent}
-                for row in rows
-                if post_dba.get_post_status(row.id) == 2
-            ]
-            total_count = len(posts)
-            total_pages = math.ceil(total_count / per_page)
-            pagination = {
-                'page': page,
-                'per_page': per_page,
-                'total': total_count,
-                'pages': total_pages,
-                'has_prev': page > 1,
-                'has_next': page < total_pages,
-                'prev_num': page - 1 if page > 1 else None,
-                'next_num': page + 1 if page < total_pages else None
-            }
-            # 只顯示當前分頁內容
-            start = (page - 1) * per_page
-            end = start + per_page
-            posts = posts[start:end]
-        else:
-            # 關鍵字搜尋（分頁，僅顯示已審核通過）
-            rows = post_dba.get_posts_by_keyword_with_pagination(query, page, per_page, 2)
-            total_count = rows.__len__()
-            posts = [
-                {'id': row.id, 'content': row.content, 'timestamp': row.timestamp, 'ip': row.ip, 'user_agent': row.user_agent}
-                for row in rows
-            ]
-            total_pages = math.ceil(total_count / per_page)
-            pagination = {
-                'page': page,
-                'per_page': per_page,
-                'total': total_count,
-                'pages': total_pages,
-                'has_prev': page > 1,
-                'has_next': page < total_pages,
-                'prev_num': page - 1 if page > 1 else None,
-                'next_num': page + 1 if page < total_pages else None
-            }
-    else:
-        # 顯示所有投稿（分頁，僅顯示已審核通過）
-        rows = post_dba.get_posts_with_pagination(page, per_page, 2)
-        total_count = post_dba.get_posts_count(2)
-        posts = [
-            {'id': row.id, 'content': row.content, 'timestamp': row.timestamp, 'ip': row.ip, 'user_agent': row.user_agent}
-            for row in rows
-        ]
+
+    # 建立分頁結構
+    # 這裡的 total_count 是根據查詢結果計算的
+    def build_pagination(total_count):
         total_pages = math.ceil(total_count / per_page)
-        pagination = {
+        return {
             'page': page,
             'per_page': per_page,
             'total': total_count,
@@ -88,13 +45,37 @@ def view_post():
             'next_num': page + 1 if page < total_pages else None
         }
 
+    if query:
+        # 如果是數字，則視為 ID 查詢
+        if query.isdigit():
+            rows = post_dba.get_posts_by_id(query)
+            posts = [
+                {'id': row.id, 'content': row.content, 'timestamp': row.timestamp, 'tag': post_dba.get_tag(row.tag).label}
+                for row in rows if post_dba.get_post_status(row.id) == 2
+            ]
+            total_count = len(posts)
+            start = (page - 1) * per_page
+            end = start + per_page
+            posts = posts[start:end]
+        # 字串查詢
+        else:
+            rows = post_dba.get_posts_by_keyword_with_pagination(query, page, per_page, 2)
+            posts = [
+                {'id': row.id, 'content': row.content, 'timestamp': row.timestamp, 'tag': post_dba.get_tag(row.tag).label}
+                for row in rows
+            ]
+            total_count = len(posts)
+    # 全部投稿
+    else:
+        rows = post_dba.get_posts_with_pagination(page, per_page, 2)
+        total_count = post_dba.get_posts_count(2)
+        posts = [
+            {'id': row.id, 'content': row.content, 'timestamp': row.timestamp, 'tag': post_dba.get_tag(row.tag).label}
+            for row in rows
+        ]
+
+    pagination = build_pagination(total_count)
     return render_template('view_post.html', posts=posts, query=query, pagination=pagination)
-
-
-@post_bp.route('/rules', methods=['GET'])
-def rules():
-    # 顯示規則頁面
-    return render_template('rules.html')
 
 @post_bp.route('/create_post', methods=['GET', 'POST'])
 def create_post():
@@ -114,17 +95,24 @@ def create_post():
 
         # 前端有擋住必填欄位，可以略過 null
         if content:
-            # 取得該Tag與該Tag是否需要審核
+            # 取得該Tag資料
             tag_id = int(request.form.get('tag', 1))
+            # 該Tag是否需要審核
             tag_pending_request = post_dba.get_tag(tag_id).pending_request
 
             # 假設 insert_post 回傳新 id
-            post_new_id = guest_dba.insert_post_guest(nickname, content, ip_addr, request.headers.get('User-Agent'), None, tag=tag_id, need_review=tag_pending_request)
+            post_new_id = guest_dba.insert_post(nickname, 
+                                                content, 
+                                                ip_addr, 
+                                                request.headers.get('User-Agent'), 
+                                                None, 
+                                                tag=tag_id, 
+                                                need_review=tag_pending_request)
+
             # 取得剛剛那筆投稿
             posts = post_dba.get_posts_by_id(post_new_id)  # 可依需求選擇
 
-            
-            # 透過 social module 發送社群貼文
+            # 透過 social module 發送社群貼文 (發送 PendingPost 到 Discord)
             result = social.send(social.social_mode.PendingPost,
                                     anon_id=str(post_new_id),
                                     nickname=nickname,
@@ -140,7 +128,3 @@ def create_post():
             return redirect(url_for('post.create_post'))
 
     return render_template('create_post.html')
-
-@post_bp.route('/', methods=['GET', 'POST'])
-def index():
-    return render_template('index.html')
