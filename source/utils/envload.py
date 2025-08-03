@@ -17,10 +17,11 @@ def load_environment_variables(app):
     app.config['MYSQL_USER']           = os.environ.get("MYSQL_USER", None)
     app.config['MYSQL_PASSWORD']       = os.environ.get("MYSQL_PASSWORD", None)
     app.config['MYSQL_DATABASE']       = os.environ.get("MYSQL_DATABASE", None)
+    app.config['EVENT_CALENDAR_ID']    = os.environ.get("EVENT_CALENDAR_ID", "")
 
 def build_sql_uri(app):
     if app.config['DEBUG'] == 'True':
-        return f"sqlite:///{os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test.db')}"
+        return f"sqlite:///test.db"
     else:
         return (
             f"mysql+pymysql://{app.config['MYSQL_USER']}:{app.config['MYSQL_PASSWORD']}@"

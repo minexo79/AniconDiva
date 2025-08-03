@@ -40,11 +40,11 @@
                     <!-- 上一頁 -->
                     {% if pagination.has_prev %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ pagination.prev_num }}{% if query %}&q={{ query }}{% endif %}">上一頁</a>
+                        <a class="page-link" href="?page={{ pagination.prev_num }}{% if query %}&q={{ query }}{% endif %}"><</a>
                     </li>
                     {% else %}
                     <li class="page-item disabled">
-                        <span class="page-link">上一頁</span>
+                        <span class="page-link"><</span>
                     </li>
                     {% endif %}
 
@@ -68,11 +68,11 @@
                     <!-- 下一頁 -->
                     {% if pagination.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ pagination.next_num }}{% if query %}&q={{ query }}{% endif %}">下一頁</a>
+                        <a class="page-link" href="?page={{ pagination.next_num }}{% if query %}&q={{ query }}{% endif %}">></a>
                     </li>
                     {% else %}
                     <li class="page-item disabled">
-                        <span class="page-link">下一頁</span>
+                        <span class="page-link">></span>
                     </li>
                     {% endif %}
                 </ul>

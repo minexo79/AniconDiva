@@ -3,17 +3,22 @@
 
 # 介紹
 本專案是一套專為Cosplay愛好者們設計的匿名投稿管理系統。<br>
-核心宗旨在於透過經驗分享、提醒與討論，促進圈內健康互動，並幫助受害者或知情人揭露不當行為以保護自己與他人。<br>
+核心宗旨在於透過透過匿名式投稿做為經驗分享與提醒管道，以促進圈內健康互動，並幫助受害者或知情人揭露不當行為以保護自己與他人。<br>
 所有內容由使用者自行張貼，本站僅提供匿名發表平台，不承擔任何使用者言論之法律責任。若經查證涉及違法或重大糾紛，站長與管理員將在符合法定程序下，提供必要資料配合法律機關調查。<br>
 若想使用該專案到你的社團/建置一份屬於自己的匿名平台，可以自由 Clone（複製）/ Fork 本專案並進行修改。
 
 # 功能
 - 發布 / 查看投稿
+    - 每篇都儲存 IP + User-Agent
     - 使用 Discord Webhook 同步發布內容
 - 管理員功能
     - 可管理、刪除投稿內容
     - 使用者管理
+        - 增，刪，改其他使用者
+        - 更改密碼
     - 匯入 / 匯出投稿紀錄
+        - PDF匯出單篇
+        - CSV匯出 & 匯入全部
 
 ## Prequires
 - Python 3.12.X
@@ -34,6 +39,7 @@ pip install -r requirement.txt
 |ADMIN_PASSWORD|預設 Admin 帳號密碼|
 |PASSWORD_HASH_SALT|密碼哈希加鹽|
 |DEBUG_MODE|除錯模式，若輸入True則預設使用SQLite|
+|EVENT_CALENDAR_ID|Google 共用日曆ID|
 |DISCORD_POSTED_WEBHOOK|Discord 未發布投稿 Webbook URL|
 |DISCORD_VERIFIED_WEBHOOK|Discord 已審核投稿 Webbook URL|
 |MYSQL_URL|MySQL 網址|

@@ -17,7 +17,16 @@ post_bp = Blueprint('post', __name__)
 
 @post_bp.route('/', methods=['GET'])
 def index():
-    return render_template('index.html')
+    post_dba = current_app.config.get('POST_DBA')
+    rows = post_dba.get_posts_with_pagination(1, 3, 2   )
+    posts = [
+        {'id': row.id, 'content': row.content, 'timestamp': row.timestamp, 'tag': post_dba.get_tag(row.tag).label}
+        for row in rows
+    ]
+
+    event_calendar = current_app.config.get("EVENT_CALENDAR_ID", "") + "@group.calendar.google.com"
+
+    return render_template('index.html', posts=posts, event_calendar=event_calendar)
 
 from flask import session
 
