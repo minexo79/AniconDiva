@@ -34,16 +34,13 @@ def anicondiva_init() -> Flask:
     app.secret_key = app.config['SECRET_KEY']
     app.logger.info('AvA => Debug Mode: %s', app.config['DEBUG'])
 
+    # 設定 SQLAlchemy 的資料庫 URI
+    app.config['SQLALCHEMY_DATABASE_URI'] = envload.build_sql_uri(app)
     if app.config['DEBUG'] == 'True':   # 2025.8.1 Blackcat: 要用字串，不可用Bool
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-        app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(project_root, 'test.db')}"
         app.logger.info('AvA => Using SQLite for Database.')
     else:
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-        app.config['SQLALCHEMY_DATABASE_URI'] = (
-            f"mysql+pymysql://{app.config['MYSQL_USER']}:{app.config['MYSQL_PASSWORD']}@"
-            f"{app.config['MYSQL_URL']}:{app.config['MYSQL_PORT']}/{app.config['MYSQL_DATABASE']}"
-        )
         app.logger.info('AvA => Using MySQL for Database.')
 
     """

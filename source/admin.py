@@ -5,6 +5,7 @@ from .utils.default_dict import DefaultDict
 import io
 import csv
 import math
+import sys
 
 # 2025.6.20 Blackcat: Modify Verified Approved and Rejected to reach admin / 2 threshold 
 # 2025.6.28 Blackcat: Implement pagination for admin_verified to speed up loading
@@ -219,12 +220,14 @@ def admin_all_posts():
 @login_required
 def admin_env():
     """管理後台系統一覽，當ID為1的管理員可見"""
+    version = sys.version.split()[0]  # Python 版本
     admin_dba = current_app.config.get('ADMIN_DBA')
     current_user = session['admin']
     row = admin_dba.get_user_by_name(current_user)
     current_user_id = row.id if row else None
     return render_template('admin_env.html', 
                            current_user_id=current_user_id,
+                           python_version=version,
                            debug_mode=current_app.config.get('DEBUG'),
                            discord_posted_url=current_app.config.get('DISCORD_POSTED_URL'),
                            discord_verified_url=current_app.config.get('DISCORD_VERIFY_URL'),
@@ -327,9 +330,6 @@ def change_password(user_id):
 
     flash(f"已更改管理員密碼，請重新登入", "success")
     return redirect(url_for('admin.admin_users'))      # <-- 用 admin.admin_users
-
-
-
 
 # --- 匯出投稿CSV ---
 @admin_bp.route('/admin_export')

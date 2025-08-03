@@ -1,3 +1,5 @@
+@import 'theme.css';
+
 .callout {
   padding: 20px;
   margin: 20px 0;
@@ -21,24 +23,24 @@
 }
 
 .callout-default {
-  border-left-color: #777;
+  border-left-color: var(--dark-grey);
 }
 .callout-default h4 {
-  color: #777;
+  color: var(--dark-grey);
 }
 
 .callout-primary {
-  border-left-color: #428bca;
+  border-left-color: var(--blue-grey);
 }
 .callout-primary h4 {
-  color: #428bca;
+  color: var(--blue-grey);
 }
 
 .callout-secondary {
-  border-left-color: #d1b16b;
+  border-left-color: var(--gold-orange);
 }
 .callout-secondary h4 {
-  color: #d1b16b;
+  color: var(--gold-orange);
 }
 
 .callout-success {

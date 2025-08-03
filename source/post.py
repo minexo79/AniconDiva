@@ -11,6 +11,7 @@ import math
 # 2025.7.26 Blackcat: Using Social Mode Instead webhook
 # 2025.7.31 Blackcat: Change Post Status To Int (With Operate ID)
 # 2025.8.1 Blackcat: Add Logging (Using AvA For Header)
+# 2025.8.2 Blackcat: Add Session for Rules Agreement (Force User to Read Rules Before Posting)
 
 post_bp = Blueprint('post', __name__)
 
@@ -18,9 +19,13 @@ post_bp = Blueprint('post', __name__)
 def index():
     return render_template('index.html')
 
-@post_bp.route('/rules', methods=['GET'])
+from flask import session
+
+@post_bp.route('/rules', methods=['GET', 'POST'])
 def rules():
-    # 顯示規則頁面
+    if request.method == 'POST':
+        session['read_rules'] = True
+        return redirect(url_for('post.create_post'))
     return render_template('rules.html')
 
 @post_bp.route('/view_post', methods=['GET', 'POST'])
@@ -79,6 +84,10 @@ def view_post():
 
 @post_bp.route('/create_post', methods=['GET', 'POST'])
 def create_post():
+    # 檢查是否已閱讀規則，若未閱讀則重定向到規則頁面
+    if not session.get('read_rules') and current_app.config.get('DEBUG') == 'False':
+        return redirect(url_for('post.rules'))
+    
     guest_dba = current_app.config.get('GUEST_DBA')
     post_dba = current_app.config.get('POST_DBA')
     posts = []
@@ -124,6 +133,7 @@ def create_post():
             current_app.logger.info('AvA => New Post Id: %s, Social Send Result: %s', post_new_id, result)
 
             # 改用redirect 來避免重複提交
+            session.pop('read_rules', None)  # 清除已讀規則的 session
             flash("投稿成功，您的匿名ID是：" + str(post_new_id), 'new_id')
             return redirect(url_for('post.create_post'))
 

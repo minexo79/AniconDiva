@@ -34,7 +34,7 @@ def generate_csv():
     filename = "sample_data.csv"
 
     # Header
-    header = ["ID", "Nickname", "Content", "IP", "User-Agent", "Tag", "status", "Timestamp"]
+    header = ["ID", "Nickname", "Content", "IP", "User-Agent", "Tag", "Status", "Timestamp"]
 
     with open(filename, mode='w', encoding='utf-8', newline='') as file:
         writer = csv.writer(file)
@@ -44,3 +44,5 @@ def generate_csv():
             writer.writerow(generate_row(i))
 
     print(f"CSV file '{filename}' created with {NUM_ROWS} rows.")
+
+generate_csv()

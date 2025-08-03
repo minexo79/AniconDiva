@@ -5,6 +5,7 @@
         <title>場次姬 Anicon DIVA</title>
     </head>
     <body class="bg-light">
+        {% include 'github_corner.html' %}
         <!-- nav bar -->
         <div class="container py-5">
             {% include 'navbar.html' %}
@@ -42,7 +43,9 @@
                 <a>若遇到騷擾、壓力或性別歧視等問題，請優先保障自身安全，必要時尋求法律協助。</a>
             </div>
             <div class="text-center mt-4">
-                <a class="btn btn-primary" href="{{ url_for('post.create_post') }}">我已同意</a>
+                <form method="post" action="{{ url_for('post.rules') }}">
+                    <button type="submit" class="btn btn-primary">我已同意</button>
+                </form>
             </div>
         </div>
         <!-- Footer -->

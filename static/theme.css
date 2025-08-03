@@ -13,6 +13,7 @@ body {
     --gold-orange: #f1a644;
     --brown-orange: #CC8050;
     --deep-blue: #25586C;
+    --dark-grey: #777;
 }
 
 /* 背景用主色 */
@@ -108,6 +109,7 @@ body {
     border-color: var(--blue-grey);
     color: #fff;
 }
+
 .btn-secondary {
     background-color: var(--gold-orange);
     border-color: var(--brown-orange);
@@ -118,6 +120,7 @@ body {
     border-color: var(--gold-orange);
     color: #fff;
 }
+
 .btn-light {
     background-color: var(--light-grey);
     border-color: var(--blue-grey);
