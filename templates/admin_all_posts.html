@@ -23,47 +23,43 @@
             </div>
         </form>
         {% if posts %}
-        <table class="table table-striped table-hover">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>暱稱</th>
-                    <th>內容</th>
-                    <th>時間</th>
-                    <th>狀態</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for post in posts %}
-                <tr>
-                    <td>{{ post.id }}</td>
-                    <td>{{ post.nickname }}</td>
-                    <td>{{ post.content[:35] }}{% if post.content|length > 35 %}...{% endif %}</td>
-                    <td>{{ post.timestamp }}</td>
-                    <td>
-                        {% if post.status == 1 %}
-                        待審核
-                        {% elif post.status == 2 %}
-                        已發布
-                        {% elif post.status == 3 %}
-                        已拒絕
-                        {% elif post.status == 4 %}
-                        已刪除
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a class="btn btn-sm btn-secondary" href="{{ url_for('admin.view_post', post_id=post.id) }}" target="_blank">查看全文</a>
-                        {% if post.status != 4 %}
-                        <form method="post" action="{{ url_for('admin.delete', post_id=post.id) }}" onsubmit="return confirm('確定刪除?');" style="display:inline;">
-                            <button type="submit" class="btn btn-sm btn-danger">刪除</button>
-                        </form>
-                        {% endif %} 
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+            {% for post in posts %}
+                <div class="card mb-3">
+                    <div class="card-header">
+                        {{ post.id }}：{{ post.nickname }}
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text" style="white-space:pre-wrap;">{{ post.content | e }}</p>
+                        <span class="badge text-bg-dark">{{ post.tag }}</span>
+                        <small class="text-muted">
+                            發布於：{{ post.timestamp }}<br>
+                            <!-- IP: {{ post.ip }} | UA: {{ post.user_agent }} -->
+                        </small>
+                        <hr>
+                        <div class="row align-items-center">
+                            <div class="col text-start">狀態：
+                                {% if post.status == 1 %}
+                                待審核
+                                {% elif post.status == 2 %}
+                                已發布
+                                {% elif post.status == 3 %}
+                                已拒絕
+                                {% elif post.status == 4 %}
+                                已刪除
+                                {% endif %}
+                            </div>
+                            <div class="col text-end">
+                                <a class="btn btn-sm btn-secondary" href="{{ url_for('admin.view_post', post_id=post.id) }}" target="_blank">查看全文</a>
+                                {% if post.status != 4 %}
+                                <form method="post" action="{{ url_for('admin.delete', post_id=post.id) }}" onsubmit="return confirm('確定刪除?');" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-danger">刪除</button>
+                                </form>
+                                {% endif %} 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
         {% else %}
         目前尚無投稿。
         {% endif %}
