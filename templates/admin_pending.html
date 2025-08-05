@@ -22,13 +22,13 @@
             {% for post in posts %}
                 <div class="card mb-3">
                     <div class="card-header">
-                        {{ post.id }}：{{ post.nickname }}
+                        {{ post.nickname }}
                     </div>
                     <div class="card-body">
                         <p class="card-text" style="white-space:pre-wrap;">{{ post.content | e }}</p>
                         <span class="badge text-bg-dark">{{ post.tag }}</span>
                         <small class="text-muted">
-                            發布於：{{ post.timestamp }}<br>
+                            匿名ID：{{ post.id }} / 發布於：{{ post.timestamp }}<br>
                             <!-- IP: {{ post.ip }} | UA: {{ post.user_agent }} -->
                         </small>
                         <hr>
